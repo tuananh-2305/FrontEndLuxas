@@ -14,9 +14,9 @@ import ButtonComponent from "./../../components/common/ButtonComponent/ButtonCom
 import { useQuery } from "@tanstack/react-query";
 import * as UserService from "../../service/UserService";
 import { useSelector } from "react-redux";
-import AddUserPage from "../AddUserPage/AddUserPage";
+import AddUserComponent from "../../components/AddUserComponent/AddUserComponent";
 import { Dropdown } from "antd";
-import DrawerUserComponent from "../../components/common/DrawerUserComponent/DrawerUserComponent";
+import UpdateUserComponent from "../../components/UpdateUserComponent/UpdateUserComponent";
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as message from "../../components/common/MessageComponent/MessageComponent";
 import DeleteModalComponent from "../../components/common/DeleteModalComponent/DeleteModalComponent";
@@ -89,7 +89,6 @@ const UserPage = () => {
 
   const mutationDelete = useMutationHooks((data) => {
     const { id, token } = data;
-    console.log(data);
     const res = UserService.deleteUser(id, token);
     return res;
   });
@@ -110,7 +109,7 @@ const UserPage = () => {
 
   return (
     <Stack sx={{ padding: "35px" }}>
-      <AddUserPage
+      <AddUserComponent
         openModalUser={openModalUser}
         handleCloseAddUser={handleCloseAddUser}
       />
@@ -131,7 +130,7 @@ const UserPage = () => {
             iconButton={<AddIcon />}
             textButton="Add User"
             bgButton="#1465C0"
-            hoverBtn="#5E35B1"
+            hoverBtn="#3C416F"
             paddingBtn="10px"
             onClickBtn={() => handleOpenAddUser()}
           />
@@ -150,7 +149,7 @@ const UserPage = () => {
         <InputComponent
           placeholder="Search"
           iconInput={<SearchIcon />}
-          borderInput=".1px solid #333"
+          borderInput="1px solid #1465C0"
           wInput="30%"
           bgInput="#fff"
         />
@@ -351,7 +350,7 @@ const UserPage = () => {
           ))}
         </Grid>
       </Stack>
-      <DrawerUserComponent
+      <UpdateUserComponent
         open={openDrawer}
         setOpenDrawer={setOpenDrawer}
         idUser={idUser}

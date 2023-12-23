@@ -1,17 +1,18 @@
 import { Button, Drawer } from "antd";
 import { InputBase, Stack, Typography } from "@mui/material";
 import React, { useState, useRef, useEffect } from "react";
-import InputComponent from "../InputComponent/InputComponent";
+import InputComponent from "../common/InputComponent/InputComponent";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Image from "mui-image";
-import imgbg from "../../../assets/images/bg7.jpg";
+import imgbg from "../../assets/images/bg7.jpg";
 import Grid from "@mui/material/Unstable_Grid2";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import { useMutationHooks } from "../../../hook/useMutationHook";
-import * as UserService from "../../../service/UserService";
-import * as message from "../MessageComponent/MessageComponent";
-const DrawerUserComponent = (props) => {
+import { useMutationHooks } from "../../hook/useMutationHook";
+import * as UserService from "../../service/UserService";
+import * as message from "../common/MessageComponent/MessageComponent";
+import { useSelector } from "react-redux";
+const UpdateUserComponent = (props) => {
   const initial = () => ({
     isAdmin: false,
     image: "1",
@@ -21,11 +22,14 @@ const DrawerUserComponent = (props) => {
     phone: "",
     password: "",
   });
+
   const { open, idUser, setOpenDrawer, setIdUser } = props;
   const [image, setImage] = useState("");
   const [inforUser, setInforUser] = useState(initial());
 
   const inputRef = useRef(null);
+
+  const user = useSelector((state) => state.user);
 
   const fetchGetDetailsUser = async (idUser) => {
     const res = await UserService.getDetailsUser(idUser);
@@ -47,6 +51,11 @@ const DrawerUserComponent = (props) => {
     }
   }, [idUser, open]);
 
+  const getAllUsers = async () => {
+    const res = await UserService.getAllUser(user?.access_token);
+    return { data: res?.data, key: "users" };
+  };
+
   const mutationUpdate = useMutationHooks((data) => {
     const { id, ...rest } = data;
     const res = UserService.updateUser(id, { ...rest });
@@ -56,8 +65,9 @@ const DrawerUserComponent = (props) => {
 
   useEffect(() => {
     if (dataUpdate?.status === "OK") {
-      message.success("Update User Success");
+      getAllUsers();
       handleCloseDrawer();
+      message.success("Update User Success");
     } else if (dataUpdate?.status === "ERR") {
       message.error(dataUpdate?.message);
     }
@@ -328,4 +338,4 @@ const DrawerUserComponent = (props) => {
     </Stack>
   );
 };
-export default DrawerUserComponent;
+export default UpdateUserComponent;

@@ -21,12 +21,12 @@ const DefaultComponent = ({ children }) => {
           handleShowNavbar={handleShowNavbar}
         />
       </Stack>
-      <Stack sx={{ flexDirection: "row", marginTop: "70px", maxWidth: "100%" }}>
+      <Stack sx={{ flexDirection: "row", marginTop: "70px" }}>
         <Stack
           sx={{
             position: "fixed",
             zIndex: 50,
-            width: "20%",
+            width: "300px",
           }}
         >
           <Menu showNavbar={showNavbar} user={user} />
@@ -34,7 +34,7 @@ const DefaultComponent = ({ children }) => {
         <Stack
           sx={{
             flexDirection: "row",
-            marginLeft: showNavbar ? "20%" : "8%",
+            marginLeft: showNavbar ? "300px" : "110px",
             width: "100%",
           }}
         >

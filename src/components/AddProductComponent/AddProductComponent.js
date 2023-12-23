@@ -1,20 +1,20 @@
 import { InputBase, Stack, TextField, Typography } from "@mui/material";
 import React, { useState, useRef, useEffect } from "react";
-import InputComponent from "../../components/common/InputComponent/InputComponent";
+import InputComponent from "../common/InputComponent/InputComponent";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Image from "mui-image";
 import imgbg from "../../assets/images/bglogin.jpg";
 import Grid from "@mui/material/Unstable_Grid2";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import ButtonComponent from "../../components/common/ButtonComponent/ButtonComponent";
+import ButtonComponent from "../common/ButtonComponent/ButtonComponent";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as ProductService from "../../service/ProductService";
-import * as message from "../../components/common/MessageComponent/MessageComponent";
-import ModalComponent from "../../components/common/ModalComponent/ModalComponent";
+import * as message from "../common/MessageComponent/MessageComponent";
+import ModalComponent from "../common/ModalComponent/ModalComponent";
 
-const AddProductPage = (props) => {
+const AddProductComponent = (props) => {
   const { openModalProduct, handleCloseAddProduct } = props;
   const [image, setImage] = useState("");
   const [selectStatus, setSelectStatus] = useState("Import");
@@ -30,7 +30,7 @@ const AddProductPage = (props) => {
     suppliesAddress: "",
     maker: "",
     shCode: "",
-    quality: "",
+    quantity: "",
     unit: "",
     price: "",
     amount: "",
@@ -85,7 +85,7 @@ const AddProductPage = (props) => {
       suppliesAddress,
       maker,
       shCode,
-      quality,
+      quantity,
       unit,
       price,
       amount,
@@ -112,7 +112,7 @@ const AddProductPage = (props) => {
       suppliesAddress,
       maker,
       shCode,
-      quality,
+      quantity,
       unit,
       price,
       amount,
@@ -160,7 +160,41 @@ const AddProductPage = (props) => {
           borderRadius: "10px",
         }}
       >
-        <Stack sx={{ overflow: "scroll", position: "relative" }}>
+        <Stack
+          sx={{
+            margin: "30px 30px 10px auto",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <Stack
+            sx={{
+              marginRight: "20px",
+              cursor: "pointer",
+              padding: "5px",
+              borderRadius: "5px",
+              background: "#F2F3F5",
+              zIndex: "1",
+              "&:hover": {
+                background: "#3F0073",
+                color: "#fff",
+              },
+            }}
+            onClick={() => handleCloseAddProduct()}
+          >
+            <ClearIcon />
+          </Stack>
+          <Stack>
+            <ButtonComponent
+              textButton="Add Product"
+              bgButton="#3F0072"
+              hoverBtn="#3C416F"
+              paddingBtn="5px 15px"
+              onClickBtn={() => handleAddProduct()}
+            />
+          </Stack>
+        </Stack>
+        <Stack sx={{ overflow: "auto", position: "relative" }}>
           <Stack sx={{ padding: "0 30px 0 0" }}>
             <Grid container spacing={4}>
               <Grid xs={3.4}>
@@ -169,15 +203,15 @@ const AddProductPage = (props) => {
                     justifyContent: "center",
                     alignItems: "center",
                     background: "#3F0072",
-                    padding: "35px 0",
-                    borderBottomRightRadius: "35%",
+                    padding: "35px 0 30px",
+                    borderBottomRightRadius: "30%",
                   }}
                 >
                   <Stack
                     sx={{
-                      height: "140px",
-                      width: "140px",
-                      borderRadius: "25px",
+                      height: "130px",
+                      width: "130px",
+                      borderRadius: "15px",
                       overflow: "hidden",
                       border: "3px solid #fff",
                       boxShadow:
@@ -189,13 +223,13 @@ const AddProductPage = (props) => {
                   <Stack
                     sx={{
                       position: "relative",
-                      width: "110px",
+                      width: "50px",
                       height: "40px",
                       cursor: "pointer",
                       background: "#fff",
                       color: "",
                       borderRadius: "5px",
-                      marginTop: "20px",
+                      margin: "-25px auto 0 20px",
                     }}
                   >
                     <Stack
@@ -229,36 +263,12 @@ const AddProductPage = (props) => {
                       }}
                     >
                       <CloudUploadIcon />
-                      <Typography sx={{ marginLeft: "10px" }}>
-                        Upload
-                      </Typography>
                     </Stack>
                   </Stack>
                 </Stack>
               </Grid>
               <Grid xs={8.6}>
-                <Stack
-                  sx={{
-                    padding: "30px 0 0 ",
-                  }}
-                >
-                  <Stack
-                    sx={{
-                      margin: "0 0 20px auto",
-                      cursor: "pointer",
-                      padding: "5px",
-                      borderRadius: "5px",
-                      background: "#F2F3F5",
-                      zIndex: "1",
-                      "&:hover": {
-                        background: "#3F0073",
-                        color: "#fff",
-                      },
-                    }}
-                    onClick={handleCloseAddProduct}
-                  >
-                    <ClearIcon />
-                  </Stack>
+                <Stack sx={{ paddingTop: "20px" }}>
                   <Grid container spacing={4}>
                     <Grid xs={4}>
                       <Typography
@@ -474,13 +484,13 @@ const AddProductPage = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Quality:
+                  Quantity:
                 </Typography>
                 <InputComponent
                   vInput={stateProduct.type}
                   onChangeInput={handleOnChange}
-                  nameInput="quality"
-                  placeholder="Quality ..."
+                  nameInput="quantity"
+                  placeholder="Quantity ..."
                   bgInput="#fff"
                   borderInput="1px solid #3F0072"
                 />
@@ -740,19 +750,10 @@ const AddProductPage = (props) => {
               </Grid>
             </Grid>
           </Stack>
-          <Stack sx={{ margin: "10px 30px 40px auto" }}>
-            <ButtonComponent
-              textButton="Add Product"
-              bgButton="#3F0072"
-              hoverBtn="#1465C0"
-              paddingBtn="14px 20px"
-              onClickBtn={() => handleAddProduct()}
-            />
-          </Stack>
         </Stack>
       </Stack>
     </ModalComponent>
   );
 };
 
-export default AddProductPage;
+export default AddProductComponent;

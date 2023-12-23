@@ -1,17 +1,17 @@
 import { Button, Drawer } from "antd";
 import { InputBase, Stack, TextField, Typography } from "@mui/material";
 import React, { useState, useRef, useEffect } from "react";
-import InputComponent from "../InputComponent/InputComponent";
+import InputComponent from "../common/InputComponent/InputComponent";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Image from "mui-image";
-import imgbg from "../../../assets/images/bg7.jpg";
+import imgbg from "../../assets/images/bg7.jpg";
 import Grid from "@mui/material/Unstable_Grid2";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import { useMutationHooks } from "../../../hook/useMutationHook";
-import * as ProductService from "../../../service/ProductService";
-import * as message from "../MessageComponent/MessageComponent";
-const DrawerProductComponent = (props) => {
+import { useMutationHooks } from "../../hook/useMutationHook";
+import * as ProductService from "../../service/ProductService";
+import * as message from "../common/MessageComponent/MessageComponent";
+const UpdateProductComponent = (props) => {
   const initial = () => ({
     image: "",
     importDate: "",
@@ -24,7 +24,7 @@ const DrawerProductComponent = (props) => {
     suppliesAddress: "",
     maker: "",
     shCode: "",
-    quality: "",
+    quantity: "",
     unit: "",
     price: "",
     amount: "",
@@ -63,7 +63,7 @@ const DrawerProductComponent = (props) => {
         suppliesAddress: res?.data.suppliesAddress,
         maker: res?.data.maker,
         shCode: res?.data.shCode,
-        quality: res?.data.quality,
+        quantity: res?.data.quantity,
         unit: res?.data.unit,
         price: res?.data.price,
         amount: res?.data.amount,
@@ -455,13 +455,13 @@ const DrawerProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Quality:
+                  Quantity:
                 </Typography>
                 <InputComponent
                   onChangeInput={handleOnChangeDetails}
-                  vInput={productDetails?.quality}
-                  nameInput="quality"
-                  placeholder="Quality ..."
+                  vInput={productDetails?.quantity}
+                  nameInput="quantity"
+                  placeholder="Quantity..."
                   bgInput="#fff"
                   borderInput="1px solid #3F0072"
                 />
@@ -726,4 +726,4 @@ const DrawerProductComponent = (props) => {
     </Stack>
   );
 };
-export default DrawerProductComponent;
+export default UpdateProductComponent;

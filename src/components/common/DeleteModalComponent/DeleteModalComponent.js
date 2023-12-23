@@ -27,12 +27,13 @@ const DeleteModalComponent = (props) => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             borderRadius: "10px",
+            padding: "20px",
           }}
         >
           <Stack
             sx={{
               flexDirection: "row",
-              margin: "20px",
+              marginBottom: "20px",
               alignItems: "center",
               justifyContent: "space-between",
             }}
@@ -58,7 +59,7 @@ const DeleteModalComponent = (props) => {
           <Alert sx={{ fontSize: "15px" }} severity="warning">
             {alertDelete}
           </Alert>
-          <Stack sx={{ margin: "20px 20px 20px auto" }}>
+          <Stack sx={{ margin: "20px 0 0 auto" }}>
             <ButtonComponent
               bgButton={bgDelete}
               textButton="Oke"

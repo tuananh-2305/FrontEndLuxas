@@ -14,7 +14,7 @@ const Header = (props) => {
 
   const items = [
     {
-      key: "1",
+      key: "user-infor",
       label: (
         <Link to="/user-infor">
           <Typography
@@ -49,9 +49,10 @@ const Header = (props) => {
       </Typography>
       <IconButton
         sx={{
-          marginLeft: "10%",
+          marginLeft: "220px",
           borderRadius: "5px",
           background: "#EDE8F6",
+          position: "absolute",
           color: "#5E35B1",
           "&:hover": {
             background: "#5E35B1",

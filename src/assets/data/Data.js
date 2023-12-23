@@ -2,6 +2,7 @@ import CottageIcon from "@mui/icons-material/Cottage";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import PeopleIcon from "@mui/icons-material/People";
 import KeyIcon from "@mui/icons-material/Key";
+import FolderIcon from "@mui/icons-material/Folder";
 
 const Data = {
   sideBar: [
@@ -31,6 +32,11 @@ const Data = {
       sideBarIcon: <PeopleIcon fontSize="small" />,
     },
     {
+      path: "/file-storage",
+      sideBarName: "File Storage",
+      sideBarIcon: <FolderIcon fontSize="small" />,
+    },
+    {
       path: "",
       sideBarName: "Authentication",
       sideBarIcon: <KeyIcon fontSize="small" />,
@@ -44,7 +50,7 @@ const Data = {
     },
   ],
   headerTableImportName: [
-    { headerImportName: "", wHeader: "100px" },
+    { headerImportName: "", wHeader: "150px" },
     { headerImportName: "STT", wHeader: "50px" },
     { headerImportName: "Image", wHeader: "180px" },
     { headerImportName: "Import Date", wHeader: "150px" },
@@ -57,7 +63,7 @@ const Data = {
     { headerImportName: "Supplies Address", wHeader: "180px" },
     { headerImportName: "Maker", wHeader: "150px" },
     { headerImportName: "SH Code", wHeader: "150px" },
-    { headerImportName: "Quality", wHeader: "80px" },
+    { headerImportName: "Quantity", wHeader: "80px" },
     { headerImportName: "Unit", wHeader: "80px" },
     { headerImportName: "Price", wHeader: "80px" },
     { headerImportName: "Amount", wHeader: "80px" },
@@ -80,7 +86,7 @@ const Data = {
     { headerExportName: "Export Date", wHeader: "150px" },
     { headerExportName: "Luxas Code", wHeader: "150px" },
     { headerExportName: "Sales for  copany Name", wHeader: "200px" },
-    { headerExportName: "Quality", wHeader: "100px" },
+    { headerExportName: "Quantity", wHeader: "100px" },
     { headerExportName: "Price", wHeader: "100px" },
     { headerExportName: "Amount", wHeader: "100px" },
     { headerExportName: "Customer sevice ", wHeader: "200px" },

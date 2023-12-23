@@ -1,22 +1,22 @@
 import Modal from "@mui/material/Modal";
 import { InputBase, Stack, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import InputComponent from "../../components/common/InputComponent/InputComponent";
+import InputComponent from "../common/InputComponent/InputComponent";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Image from "mui-image";
 import imgbg from "../../assets/images/bglogin.jpg";
 import Grid from "@mui/material/Unstable_Grid2";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-import ButtonComponent from "../../components/common/ButtonComponent/ButtonComponent";
+import ButtonComponent from "../common/ButtonComponent/ButtonComponent";
 // import * as message from "../../components/common/MessageComponent/MessageComponent";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as UserService from "../../service/UserService";
 // import { useSelector } from "react-redux";
-import * as message from "../../components/common/MessageComponent/MessageComponent";
+import * as message from "../common/MessageComponent/MessageComponent";
 
-const AddUserPage = (props) => {
+const AddUserComponent = (props) => {
   const initial = () => ({
     isAdmin: "false",
     image: "1",
@@ -309,7 +309,7 @@ const AddUserPage = (props) => {
           <ButtonComponent
             textButton="Add User"
             bgButton="#1465C0"
-            hoverBtn="#5E35B1"
+            hoverBtn="#3C416F"
             paddingBtn="14px 20px"
             onClickBtn={handleAddUser}
           />
@@ -318,4 +318,4 @@ const AddUserPage = (props) => {
     </Modal>
   );
 };
-export default AddUserPage;
+export default AddUserComponent;

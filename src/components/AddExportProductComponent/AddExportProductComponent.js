@@ -1,21 +1,20 @@
-import { Stack, Typography, InputBase } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
-import InputComponent from "../../components/common/InputComponent/InputComponent";
+import InputComponent from "../common/InputComponent/InputComponent";
 import Image from "mui-image";
 import imgbg from "../../assets/images/bglogin.jpg";
 import Grid from "@mui/material/Unstable_Grid2";
-import ButtonComponent from "../../components/common/ButtonComponent/ButtonComponent";
+import ButtonComponent from "../common/ButtonComponent/ButtonComponent";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as ProductService from "../../service/ProductService";
 import * as ExportProductService from "../../service/ExportProductService";
-import * as message from "../../components/common/MessageComponent/MessageComponent";
-import ModalComponent from "../../components/common/ModalComponent/ModalComponent";
+import * as message from "../common/MessageComponent/MessageComponent";
+import ModalComponent from "../common/ModalComponent/ModalComponent";
 import { useSelector } from "react-redux";
-import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import InputNumberComponent from "../common/InputNumberComponent/InputNumberComponent";
 
-const AddExportProduct = (props) => {
+const AddExportProductComponent = (props) => {
   const initial = () => ({
     implementer: "",
     luxasCode: "",
@@ -24,7 +23,7 @@ const AddExportProduct = (props) => {
     shCode: "",
     image: "1",
     saleForCompany: "",
-    quality: "",
+    quantity: "",
     unit: "",
     price: "",
     amount: "",
@@ -37,9 +36,12 @@ const AddExportProduct = (props) => {
     note: "",
   });
   const { openModalExport, handleCloseModalExport, idProduct } = props;
-
   const user = useSelector((state) => state.user);
   const [stateExportProduct, setStateExportProduct] = useState(initial());
+  const [productDetails, setProductDetails] = useState({
+    quantity: "",
+  });
+
   const fetchGetDetailsProduct = async (idProduct) => {
     const res = await ProductService.getDetailsProduct(idProduct);
     if (res?.data) {
@@ -51,7 +53,7 @@ const AddExportProduct = (props) => {
         shCode: res?.data.shCode,
         image: "1",
         saleForCompany: "",
-        quality: res?.data.quality,
+        quantity: res?.data.quantity,
         unit: res?.data.unit,
         price: "",
         amount: "",
@@ -63,7 +65,10 @@ const AddExportProduct = (props) => {
         profit: "",
         note: "",
       });
-      setQualityProduct(res?.data.quality);
+      setProductDetails({
+        quantity: res?.data.quantity,
+      });
+      setQuantityProduct(res?.data.quantity);
     }
   };
   useEffect(() => {
@@ -72,43 +77,46 @@ const AddExportProduct = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idProduct, openModalExport]);
-  const [qualityProduct, setQualityProduct] = useState("");
+  const [quantityProduct, setQuantityProduct] = useState("");
+  const [valueNumberInput, setValueNumberInput] = useState();
+  const [valueInputOnChage, setValueInputOnChage] = useState();
   const handleOnChange = (e) => {
     setStateExportProduct({
       ...stateExportProduct,
       [e.target.name]: e.target.value,
     });
   };
-  const handleOnChangeQty = (e) => {
-    setQualityProduct(e.target.value);
+  const handleOnChangeQty = (event, val) => {
+    setValueInputOnChage(event.target.value ? event.target.value : val);
+    setValueNumberInput(val ? val : event.target.value);
     setStateExportProduct({
       ...stateExportProduct,
-      quality: e.target.value,
+      quantity: val ? val : event.target.value,
+    });
+    setProductDetails({
+      ...productDetails,
+      quantity:
+        Number(productDetails.quantity) -
+        Number(val ? val : event.target.value),
     });
   };
 
-  const incrementQty = () => {
-    if (Number(qualityProduct) >= stateExportProduct.quality) {
-      setQualityProduct(stateExportProduct.quality);
-    } else {
-      setQualityProduct((prev) => prev + 1);
-    }
-  };
-  const decrementQty = () => {
-    if (Number(qualityProduct) <= 1) {
-      setQualityProduct("1");
-    } else {
-      setQualityProduct((prev) => prev - 1);
-    }
-  };
+  const mutationUpdate = useMutationHooks((data) => {
+    const { id, ...rest } = data;
+    const res = ProductService.updateProduct(id, { ...rest });
+    return res;
+  });
 
   const mutation = useMutationHooks((data) => {
     const {
       implementer,
       luxasCode,
       image,
+      partName,
+      model,
+      shCode,
       saleForCompany,
-      quality,
+      quantity,
       unit,
       price,
       amount,
@@ -124,8 +132,11 @@ const AddExportProduct = (props) => {
       implementer,
       luxasCode,
       image,
+      partName,
+      model,
+      shCode,
       saleForCompany,
-      quality,
+      quantity,
       unit,
       price,
       amount,
@@ -142,18 +153,36 @@ const AddExportProduct = (props) => {
 
   const { data } = mutation;
 
+  const mutationDelete = useMutationHooks((data) => {
+    const { id } = data;
+    const res = ProductService.deteleProduct(id);
+    return res;
+  });
+
   useEffect(() => {
     if (data?.status === "OK") {
-      message.success("Export Product Success");
+      if (Number(data?.data.quantity) === Number(quantityProduct)) {
+        mutationDelete.mutate({ id: idProduct });
+      } else {
+        mutationUpdate.mutate({ id: idProduct, productDetails });
+      }
       handleCloseModalExport();
+      message.success("Export Product Success");
     } else if (data?.status === "ERR") {
       message.error(data?.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
   const handleExportProduct = () => {
-    mutation.mutate(stateExportProduct);
-    console.log(stateExportProduct);
+    if (valueInputOnChage < 1 && valueInputOnChage > quantityProduct) {
+      message.warning(
+        `Quantity of products must be less than or equal to ${quantityProduct}`
+      );
+      setValueInputOnChage(quantityProduct);
+    } else {
+      mutation.mutate(stateExportProduct);
+    }
   };
   return (
     <ModalComponent isOpen={openModalExport} onClose={handleCloseModalExport}>
@@ -204,7 +233,7 @@ const AddExportProduct = (props) => {
             />
           </Stack>
         </Stack>
-        <Stack sx={{ position: "relative", overflow: "scroll" }}>
+        <Stack sx={{ position: "relative", overflow: "auto" }}>
           <Stack sx={{ padding: "10px 30px  0" }}>
             <Grid container spacing={3}>
               <Grid xs={3}>
@@ -350,69 +379,26 @@ const AddExportProduct = (props) => {
                 />
               </Grid>
               <Grid xs={3}>
-                <Typography
-                  sx={{
-                    fontSize: "15px",
-                    fontWeight: "bold",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Quailty:
-                </Typography>
-                <Stack
-                  sx={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <InputBase
-                    value={qualityProduct}
-                    onChange={handleOnChangeQty}
-                    alt=""
+                <Stack>
+                  <Typography
                     sx={{
-                      fontSize: "16px",
+                      fontSize: "15px",
                       fontWeight: "bold",
-                      padding: "8px 15px",
-                      border: "1px solid #004225",
-                      borderTopLeftRadius: "5px",
-                      borderBottomLeftRadius: "5px",
+                      marginBottom: "8px",
                     }}
+                  >
+                    Quailty:
+                  </Typography>
+                  <InputNumberComponent
+                    onChange={handleOnChangeQty}
+                    value={
+                      valueNumberInput
+                        ? valueNumberInput
+                        : Number(quantityProduct)
+                    }
+                    valueMax={Number(quantityProduct)}
+                    valueMin={1}
                   />
-                  <Stack sx={{ flexDirection: "column" }}>
-                    <Stack
-                      onClick={() => incrementQty()}
-                      sx={{
-                        padding: "0 8px",
-                        borderTopRightRadius: "5px",
-                        cursor: "pointer",
-                        background: "#004225",
-                        color: "#fff",
-                        border: "0.5px solid #004225",
-                      }}
-                    >
-                      <ArrowDropUpIcon />
-                    </Stack>
-                    <Stack
-                      sx={{
-                        background: "#fff",
-                        height: "0.6px",
-                        width: "100%",
-                      }}
-                    ></Stack>
-                    <Stack
-                      onClick={() => decrementQty()}
-                      sx={{
-                        padding: "0 8px",
-                        borderBottomRightRadius: "5px",
-                        cursor: "pointer",
-                        background: "#004225",
-                        color: "#fff",
-                        border: "0.5px solid #004225",
-                      }}
-                    >
-                      <ArrowDropDownIcon />
-                    </Stack>
-                  </Stack>
                 </Stack>
               </Grid>
               <Grid xs={3}>
@@ -612,4 +598,4 @@ const AddExportProduct = (props) => {
   );
 };
 
-export default AddExportProduct;
+export default AddExportProductComponent;

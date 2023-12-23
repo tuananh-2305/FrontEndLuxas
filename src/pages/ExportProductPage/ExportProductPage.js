@@ -1,5 +1,5 @@
 import { Stack, Typography } from "@mui/material";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import TuneIcon from "@mui/icons-material/Tune";
 import InputComponent from "../../components/common/InputComponent/InputComponent";
@@ -16,9 +16,22 @@ import Button from "@mui/material/Button";
 import Pagination from "@mui/material/Pagination";
 import { useQuery } from "@tanstack/react-query";
 import * as ExportProductService from "../../service/ExportProductService";
+import DeleteModalComponent from "../../components/common/DeleteModalComponent/DeleteModalComponent";
+import { useMutationHooks } from "../../hook/useMutationHook";
+import * as message from "../../components/common/MessageComponent/MessageComponent";
+import Avatar from "@mui/material/Avatar";
+import UpdateExportProductComponent from "../../components/UpdateExportProductComponent/UpdateExportProductComponent";
 
 const ExportProductPage = () => {
   const { headerTableExportName } = useContext(Context);
+
+  const [idProduct, setIdProduct] = useState("");
+  const [openUpdate, setOpenUpdate] = useState(false);
+
+  const showUpdateExport = (id) => {
+    setOpenUpdate(true);
+    setIdProduct(id);
+  };
   const getAllExportProduct = async () => {
     const res = await ExportProductService.getAllExportProduct();
     return res.data;
@@ -34,6 +47,39 @@ const ExportProductPage = () => {
   //   var utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
   //   return utc;
   // };
+
+  const [idExportProduct, setIdExportProduct] = useState("");
+  const [openModalDeLete, setOpenModalDeLete] = useState(false);
+
+  const handleOpenModal = (id) => {
+    setOpenModalDeLete(true);
+    setIdExportProduct(id);
+  };
+  const handleCloseModal = () => {
+    setOpenModalDeLete(false);
+    setIdExportProduct("");
+  };
+
+  const mutationDelete = useMutationHooks((data) => {
+    const { id } = data;
+    const res = ExportProductService.deleteExportProduct(id);
+    return res;
+  });
+  const { data: dataDelete } = mutationDelete;
+
+  useEffect(() => {
+    if (dataDelete?.status === "OK") {
+      message.success("Delete Product Success");
+      handleCloseModal();
+    } else if (dataDelete?.status === "ERR") {
+      message.error(dataDelete?.message);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataDelete]);
+
+  const handleDeleteExportProduct = () => {
+    mutationDelete.mutate({ id: idExportProduct });
+  };
 
   return (
     <Stack sx={{ position: "relative" }}>
@@ -75,7 +121,7 @@ const ExportProductPage = () => {
         <InputComponent
           placeholder="Search"
           iconInput={<SearchIcon />}
-          borderInput=".1px solid #333"
+          borderInput="1px solid #004225"
           wInput="30%"
           bgInput="#fff"
         />
@@ -108,7 +154,12 @@ const ExportProductPage = () => {
             <TableHead>
               <TableRow>
                 {headerTableExportName.map((header, index) => (
-                  <TableCell key={index}>
+                  <TableCell
+                    key={index}
+                    sx={{
+                      textAlign: "center",
+                    }}
+                  >
                     <Typography
                       sx={{
                         width: header.wHeader,
@@ -123,61 +174,191 @@ const ExportProductPage = () => {
               </TableRow>
             </TableHead>
             {exportProducts?.map((product, index) => (
-              <TableBody sx={{ background: "#f2f2f2" }} key={index}>
+              <TableBody
+                sx={{
+                  background: "#f2f2f2",
+                }}
+                key={index}
+              >
                 <TableRow sx={{ minHeight: "10rem" }}>
-                  <TableCell component="th" scope="row">
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    sx={{
+                      textAlign: "center",
+                      fontWeight: "bold",
+                      color: "red",
+                      fontSize: "16px",
+                      borderRight: "0.1px solid #333",
+                    }}
+                  >
                     {index + 1}
                   </TableCell>
-                  <TableCell>{product?.implementer}</TableCell>
-                  <TableCell>{product?.image}</TableCell>
-                  <TableCell>{product?.createdAt}</TableCell>
-                  <TableCell>{product?.luxasCode}</TableCell>
-                  <TableCell>{product?.saleForCompany}</TableCell>
-                  <TableCell>{product?.quality}</TableCell>
-                  <TableCell>{product?.price}</TableCell>
-                  <TableCell>{product?.amount}</TableCell>
-                  <TableCell>{product?.customerSevice}</TableCell>
-                  <TableCell>{product?.vat}</TableCell>
-                  <TableCell>{product?.shippingFee}</TableCell>
-                  <TableCell>{product?.commission}</TableCell>
-                  <TableCell>{product?.feesIncurred}</TableCell>
-                  <TableCell>{product?.profit}</TableCell>
-                  <TableCell>{product?.note}</TableCell>
                   <TableCell
-                    sx={{ justifyContent: "center", alignItems: "center" }}
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
                   >
-                    <Button
-                      sx={{
-                        padding: "12px ",
-                        background: "#fff",
-                        borderRadius: " 8px",
-                        marginBottom: "10px",
-                        boxShadow:
-                          "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
-                        "&:hover": {
-                          background: "#1465C0",
-                          color: "#fff",
-                        },
-                      }}
+                    {product?.implementer}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                    }}
+                  >
+                    <Stack
+                      sx={{ justifyContent: "center", alignItems: "center" }}
                     >
-                      <EditIcon fontSize="small" />
-                    </Button>
-                    <Button
-                      sx={{
-                        padding: "12px 0",
-                        background: "#fff",
-                        borderRadius: " 8px",
-                        boxShadow:
-                          "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
-                        color: "#FF5630",
-                        "&:hover": {
-                          background: "#FF5630",
-                          color: "#fff",
-                        },
-                      }}
+                      <Avatar
+                        variant="rounded"
+                        sx={{ width: 80, height: 80 }}
+                      />
+                    </Stack>
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.createdAt}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.luxasCode}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.saleForCompany}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.quantity}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.price}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.amount}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.customerSevice}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.vat}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.shippingFee}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.commission}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.feesIncurred}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.profit}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      borderRight: "0.1px solid #333",
+                      textAlign: "center",
+                    }}
+                  >
+                    {product?.note}
+                  </TableCell>
+                  <TableCell>
+                    <Stack
+                      sx={{ justifyContent: "center", alignItems: "center" }}
                     >
-                      <DeleteIcon fontSize="small" />
-                    </Button>
+                      <Button
+                        sx={{
+                          padding: "12px ",
+                          background: "#fff",
+                          borderRadius: " 8px",
+                          marginBottom: "10px",
+                          boxShadow:
+                            "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
+                          "&:hover": {
+                            background: "#1465C0",
+                            color: "#fff",
+                          },
+                        }}
+                        onClick={() => showUpdateExport(product._id)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </Button>
+                      <Button
+                        sx={{
+                          padding: "12px 0",
+                          background: "#fff",
+                          borderRadius: " 8px",
+                          boxShadow:
+                            "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
+                          color: "#FF5630",
+                          "&:hover": {
+                            background: "#FF5630",
+                            color: "#fff",
+                          },
+                        }}
+                        onClick={() => handleOpenModal(product._id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </Button>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -187,6 +368,19 @@ const ExportProductPage = () => {
         <Stack sx={{ margin: "8vh 0 0 auto" }}>
           <Pagination count={10} variant="outlined" shape="rounded" />
         </Stack>
+        <UpdateExportProductComponent
+          open={openUpdate}
+          setOpenDrawer={setOpenUpdate}
+          idProduct={idProduct}
+        />
+        <DeleteModalComponent
+          openModalDeLete={openModalDeLete}
+          handleCloseModalDelete={() => handleCloseModal()}
+          handleDelete={() => handleDeleteExportProduct()}
+          titleDelete="Delete Product"
+          alertDelete="Do you want to delete product ?"
+          bgDelete="#3F0072"
+        />
       </Stack>
     </Stack>
   );

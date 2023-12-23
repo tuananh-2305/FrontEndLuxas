@@ -33,7 +33,7 @@ const Menu = (props) => {
   return (
     <Stack
       sx={{
-        width: showNavbar ? "100%" : "40%",
+        width: showNavbar ? "100%" : "110px",
         backgroundColor: "#F1F3F5",
         padding: showNavbar ? "40px 30px" : "40px 20px",
         height: "100vh",
@@ -129,7 +129,8 @@ const Menu = (props) => {
                           flexDirection: "row",
                           alignItems: "center",
                           color: "#000",
-                          paddingLeft: showNavbar ? "40px" : "18px",
+                          paddingLeft: showNavbar ? "40px" : "0",
+                          justifyContent: showNavbar ? "left" : "center",
                           "&:hover": {
                             background: "#18C1E8",
                             color: "#fff",
