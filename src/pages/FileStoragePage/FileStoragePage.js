@@ -9,7 +9,7 @@ import * as UploadFileService from "../../service/UploadFileService";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useQuery } from "@tanstack/react-query";
 import AddFileComponent from "../../components/AddFileComponent/AddFileComponent";
-
+import FileComponent from "../../components/common/FileComponent/FileComponent";
 const FileStoragePage = () => {
   const [openModal, setOpenModal] = useState(false);
   const [fileList, setFileList] = useState([]);
@@ -91,13 +91,15 @@ const FileStoragePage = () => {
       </Stack>
       <Stack sx={{ backgroundColor: "#F2F3F5", padding: "30px" }}>
         <Grid container spacing={4}>
-          <Grid xs={4}>
-            {files?.map((file, index) => (
-              <Stack key={index}>
-                <Stack sx={{ padding: "10px" }}>{file?.fileName}</Stack>
-              </Stack>
-            ))}
-          </Grid>
+          {files?.map((file, index) => (
+            <Grid xs={2.4} key={index}>
+              <FileComponent
+                fileName={file?.fileName}
+                typeFile={file?.typeFile}
+                fileCode={file?.fileCode}
+              />
+            </Grid>
+          ))}
         </Grid>
       </Stack>
       <AddFileComponent

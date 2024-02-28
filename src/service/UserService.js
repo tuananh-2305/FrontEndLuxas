@@ -60,14 +60,9 @@ export const logoutUser = async () => {
   return res.data;
 };
 
-export const getAllUser = async (access_token) => {
+export const getAllUser = async () => {
   const res = await axiosJWT.get(
-    `${process.env.REACT_APP_API_URL}/user/get-all-user`,
-    {
-      headers: {
-        token: `Bearer ${access_token}`,
-      },
-    }
+    `${process.env.REACT_APP_API_URL}/user/get-all-user`
   );
   return res.data;
 };

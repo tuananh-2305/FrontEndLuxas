@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import InputComponent from "../common/InputComponent/InputComponent";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Image from "mui-image";
-import imgbg from "../../assets/images/bg7.jpg";
 import Grid from "@mui/material/Unstable_Grid2";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
@@ -25,6 +24,7 @@ const UpdateProductComponent = (props) => {
     maker: "",
     shCode: "",
     quantity: "",
+    limitSetting: "",
     unit: "",
     price: "",
     amount: "",
@@ -39,10 +39,10 @@ const UpdateProductComponent = (props) => {
     stockLocal: "",
     note: "",
   });
-  const { open, idProduct, setOpenDrawer } = props;
+  const { open, idProduct, setOpenDrawer, getAllProduct } = props;
   const [image, setImage] = useState("");
   const [productDetails, setProductDetails] = useState(initial());
-
+  console.log(image);
   const inputRef = useRef(null);
   const handleAddImgProduct = (e) => {
     setImage(e.target.files[0]);
@@ -64,6 +64,7 @@ const UpdateProductComponent = (props) => {
         maker: res?.data.maker,
         shCode: res?.data.shCode,
         quantity: res?.data.quantity,
+        limitSetting: res?.data.limitSetting,
         unit: res?.data.unit,
         price: res?.data.price,
         amount: res?.data.amount,
@@ -73,6 +74,7 @@ const UpdateProductComponent = (props) => {
         feeShipping: res?.data.feeShipping,
         costomsService: res?.data.costomsService,
         fines: res?.data.fines,
+        productFee: res?.data.productFee,
         totalFee: res?.data.totalFee,
         description: res?.data.description,
         stockLocal: res?.data.stockLocal,
@@ -95,8 +97,9 @@ const UpdateProductComponent = (props) => {
 
   useEffect(() => {
     if (dataUpdate?.status === "OK") {
-      message.success("Update Product Success");
       closeProductDrawer();
+      message.success("Update Product Success");
+      getAllProduct();
     } else if (dataUpdate?.status === "ERR") {
       message.error(dataUpdate?.message);
     }
@@ -186,7 +189,13 @@ const UpdateProductComponent = (props) => {
                       "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
                   }}
                 >
-                  <Image src={image ? URL.createObjectURL(image) : imgbg} />
+                  <Image
+                    src={
+                      productDetails?.image
+                        ? `${process.env.REACT_APP_UPLOAD_URL}/images/products/${productDetails?.image}`
+                        : ""
+                    }
+                  />
                 </Stack>
                 <Stack
                   sx={{
@@ -360,25 +369,6 @@ const UpdateProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Model:
-                </Typography>
-                <InputComponent
-                  onChangeInput={handleOnChangeDetails}
-                  vInput={productDetails?.model}
-                  nameInput="model"
-                  placeholder="Model ..."
-                  bgInput="#fff"
-                  borderInput="1px solid #3F0072"
-                />
-              </Grid>
-              <Grid xs={6}>
-                <Typography
-                  sx={{
-                    fontSize: "15px",
-                    fontWeight: "bold",
-                    marginBottom: "8px",
-                  }}
-                >
                   Supplies:
                 </Typography>
                 <InputComponent
@@ -424,6 +414,44 @@ const UpdateProductComponent = (props) => {
                   vInput={productDetails?.maker}
                   nameInput="maker"
                   placeholder="Maker ..."
+                  bgInput="#fff"
+                  borderInput="1px solid #3F0072"
+                />
+              </Grid>
+              <Grid xs={4}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Model:
+                </Typography>
+                <InputComponent
+                  onChangeInput={handleOnChangeDetails}
+                  vInput={productDetails?.model}
+                  nameInput="model"
+                  placeholder="Model ..."
+                  bgInput="#fff"
+                  borderInput="1px solid #3F0072"
+                />
+              </Grid>
+              <Grid xs={2}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Limit Setting:
+                </Typography>
+                <InputComponent
+                  onChangeInput={handleOnChangeDetails}
+                  vInput={productDetails?.limitSetting}
+                  nameInput="limitSetting"
+                  placeholder="Limit ..."
                   bgInput="#fff"
                   borderInput="1px solid #3F0072"
                 />
@@ -633,6 +661,25 @@ const UpdateProductComponent = (props) => {
                   vInput={productDetails?.fines}
                   nameInput="fines"
                   placeholder="Fines ..."
+                  bgInput="#fff"
+                  borderInput="1px solid #3F0072"
+                />
+              </Grid>
+              <Grid xs={3}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Product Fee:
+                </Typography>
+                <InputComponent
+                  onChangeInput={handleOnChangeDetails}
+                  vInput={productDetails?.productFee}
+                  nameInput="productFee"
+                  placeholder="Total Fee  ..."
                   bgInput="#fff"
                   borderInput="1px solid #3F0072"
                 />

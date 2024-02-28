@@ -14,6 +14,7 @@ const InputComponent = (props) => {
     iconInput2,
     onClickIconInput,
     nameInput,
+    inputRef,
   } = props;
   return (
     <Stack
@@ -38,6 +39,7 @@ const InputComponent = (props) => {
         onChange={onChangeInput}
         type={typeInput}
         name={nameInput}
+        ref={inputRef}
       />
       {iconInput2 ? (
         <Stack

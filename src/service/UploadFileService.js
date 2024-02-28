@@ -6,7 +6,7 @@ export const upLoadFile = async (formData) => {
     `${process.env.REACT_APP_API_URL}/file/upload`,
     formData
   );
-  return res.formData;
+  return res.data;
 };
 
 export const getAllFile = async () => {

@@ -62,9 +62,9 @@ const DeleteModalComponent = (props) => {
           <Stack sx={{ margin: "20px 0 0 auto" }}>
             <ButtonComponent
               bgButton={bgDelete}
-              textButton="Oke"
-              hoverBtn="#004225"
-              paddingBtn="10px"
+              textButton="Delete"
+              hoverBtn="#FF5630"
+              paddingBtn="8px 15px"
               onClickBtn={handleDelete}
             />
           </Stack>

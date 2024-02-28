@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import InputComponent from "../common/InputComponent/InputComponent";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Image from "mui-image";
-import imgbg from "../../assets/images/bglogin.jpg";
+import productDefault from "../../assets/images/productdefault.png";
 import Grid from "@mui/material/Unstable_Grid2";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
@@ -13,13 +13,16 @@ import { useMutationHooks } from "../../hook/useMutationHook";
 import * as ProductService from "../../service/ProductService";
 import * as message from "../common/MessageComponent/MessageComponent";
 import ModalComponent from "../common/ModalComponent/ModalComponent";
+import excelImage from "../../assets/images/excel.png";
+import wordImage from "../../assets/images/word.png";
+import pdfImage from "../../assets/images/pdf.png";
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import defaultImage from "../../assets/images/file.png";
+import folder from "../../assets/images/folder.png";
 
 const AddProductComponent = (props) => {
-  const { openModalProduct, handleCloseAddProduct } = props;
-  const [image, setImage] = useState("");
-  const [selectStatus, setSelectStatus] = useState("Import");
-  const [stateProduct, setStateProduct] = useState({
-    image: "1",
+  const initial = () => ({
+    image: "",
     importDate: "",
     importNo_VatNo: "",
     luxasCode: "",
@@ -30,26 +33,113 @@ const AddProductComponent = (props) => {
     suppliesAddress: "",
     maker: "",
     shCode: "",
-    quantity: "",
+    quantity: 0,
+    limitSetting: "",
     unit: "",
-    price: "",
-    amount: "",
+    price: 0,
+    amount: 0,
     size: "",
-    importTax: "",
-    vatImport: "",
-    feeShipping: "",
-    costomsService: "",
-    fines: "",
-    totalFee: "",
+    importTax: "10",
+    vatImport: "10",
+    feeShipping: 0,
+    costomsService: 0,
+    fines: 0,
+    costImportTax: 0,
+    totalFee: 0,
+    productFee: 0,
     description: "",
     stockLocal: "",
     note: "",
   });
+  const { openModalProduct, setOpenModelProduct, getAllProduct } = props;
+  const [image, setImage] = useState("");
+  const [stateProduct, setStateProduct] = useState(initial());
+  const [selectStatus, setSelectStatus] = useState(stateProduct.status);
+  const [vatImport, setVatImport] = useState(stateProduct.vatImport);
+  const [importTax, setImportTax] = useState(stateProduct.importTax);
+  const [costImportTax, setCostImportTax] = useState(
+    stateProduct.costImportTax
+  );
 
   const inputRef = useRef(null);
 
+  const inputFileRef = useRef(null);
+  const imageConfig = {
+    xlsx: excelImage,
+    pdf: pdfImage,
+    docx: wordImage,
+    default: defaultImage,
+  };
+  const [fileDocumentList, setFileDocumentList] = useState([]);
+  const [amount, setAmount] = useState(parseInt(stateProduct.amount));
+  const [totalFee, setTotalFee] = useState(parseInt(stateProduct.totalFee));
+  const [productFee, setProductFee] = useState(
+    parseInt(stateProduct.productFee)
+  );
+
+  const handleCloseAddProduct = () => {
+    setOpenModelProduct(false);
+    setFileDocumentList("");
+  };
+
+  const handleUploadDocument = (e) => {
+    const newFile = e.target.files[0];
+    if (newFile) {
+      const updateList = [...fileDocumentList, newFile];
+      setFileDocumentList(updateList);
+    }
+  };
+  useEffect(() => {
+    if (!openModalProduct) {
+      setStateProduct(initial());
+      setAmount(0);
+      setTotalFee(0);
+      setProductFee(0);
+      setCostImportTax(0);
+    }
+  }, [openModalProduct]);
+
+  useEffect(() => {
+    if (stateProduct.quantity && stateProduct.price) {
+      setAmount(parseInt(stateProduct.quantity) * parseInt(stateProduct.price));
+    }
+    if (stateProduct.quantity && totalFee) {
+      setProductFee(
+        Math.floor(parseInt(totalFee) / parseInt(stateProduct.quantity))
+      );
+    }
+    if (amount || stateProduct) {
+      const totalFee =
+        parseInt(amount) +
+        parseInt(stateProduct.feeShipping) +
+        parseInt(stateProduct.costomsService) +
+        parseInt(stateProduct.fines);
+      setTotalFee(parseInt(totalFee));
+    }
+    if (importTax && amount) {
+      const percentage =
+        parseInt(amount) + (parseInt(amount) * parseInt(importTax)) / 100;
+      setCostImportTax(percentage);
+    }
+    if (amount !== 0 || totalFee !== 0 || productFee !== 0) {
+      stateProduct.amount = amount;
+      stateProduct.totalFee = totalFee;
+      stateProduct.productFee = productFee;
+    }
+  }, [amount, totalFee, productFee, stateProduct, vatImport, importTax]);
+
+  const fileRemove = (file) => {
+    const updatedList = [...fileDocumentList];
+    updatedList.splice(fileDocumentList.indexOf(file), 1);
+    setFileDocumentList(updatedList);
+  };
+
   const handleAddImgProduct = (e) => {
     setImage(e.target.files[0]);
+    setStateProduct({
+      ...stateProduct,
+      image: e.target.files[0],
+    });
   };
 
   const handleDescription = (e) => {
@@ -58,12 +148,14 @@ const AddProductComponent = (props) => {
       description: e.target.value,
     });
   };
+
   const handleOnChange = (e) => {
     setStateProduct({
       ...stateProduct,
       [e.target.name]: e.target.value,
     });
   };
+
   const handleSelectStatus = (e) => {
     setSelectStatus(e.target.value);
     setStateProduct({
@@ -72,77 +164,50 @@ const AddProductComponent = (props) => {
     });
   };
 
-  const mutation = useMutationHooks((data) => {
-    const {
-      image,
-      importDate,
-      importNo_VatNo,
-      luxasCode,
-      status,
-      partName,
-      model,
-      supplies,
-      suppliesAddress,
-      maker,
-      shCode,
-      quantity,
-      unit,
-      price,
-      amount,
-      size,
-      importTax,
-      vatImport,
-      feeShipping,
-      costomsService,
-      fines,
-      totalFee,
-      description,
-      stockLocal,
-      note,
-    } = data;
-    const res = ProductService.addProduct({
-      image,
-      importDate,
-      importNo_VatNo,
-      luxasCode,
-      status,
-      partName,
-      model,
-      supplies,
-      suppliesAddress,
-      maker,
-      shCode,
-      quantity,
-      unit,
-      price,
-      amount,
-      size,
-      importTax,
-      vatImport,
-      feeShipping,
-      costomsService,
-      fines,
-      totalFee,
-      description,
-      stockLocal,
-      note,
+  const handleSelectImportTax = (e) => {
+    setImportTax(e.target.value);
+    setStateProduct({
+      ...stateProduct,
+      importTax: e.target.value,
     });
+  };
+
+  const handleSelectVatImport = (e) => {
+    setVatImport(e.target.value);
+    setStateProduct({
+      ...stateProduct,
+      vatImport: e.target.value,
+    });
+  };
+
+  const mutation = useMutationHooks((data) => {
+    const res = ProductService.addProduct(data);
     return res;
   });
-
   const { data } = mutation;
 
   useEffect(() => {
     if (data?.status === "OK") {
-      message.success("Add Product Success");
       handleCloseAddProduct();
+      message.success("Add Product Success");
+      getAllProduct();
     } else if (data?.status === "ERR") {
       message.error(data?.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
   const handleAddProduct = () => {
-    mutation.mutate(stateProduct);
+    const formData = new FormData();
+
+    for (let i = 0; i < fileDocumentList.length; i++) {
+      formData.append("documentFile", fileDocumentList[i]);
+    }
+
+    for (const key in stateProduct) {
+      const value = stateProduct[key];
+      formData.append(key, value);
+    }
+    mutation.mutate(formData);
   };
 
   return (
@@ -195,22 +260,24 @@ const AddProductComponent = (props) => {
           </Stack>
         </Stack>
         <Stack sx={{ overflow: "auto", position: "relative" }}>
-          <Stack sx={{ padding: "0 30px 0 0" }}>
-            <Grid container spacing={4}>
-              <Grid xs={3.4}>
+          <Stack sx={{ padding: "0 20px 0 0" }}>
+            <Grid container spacing={3}>
+              <Grid xs={3.2}>
                 <Stack
                   sx={{
+                    height: "100%",
+                    width: "100%",
                     justifyContent: "center",
                     alignItems: "center",
                     background: "#3F0072",
-                    padding: "35px 0 30px",
                     borderBottomRightRadius: "30%",
                   }}
                 >
                   <Stack
                     sx={{
-                      height: "130px",
-                      width: "130px",
+                      background: "#fff",
+                      height: "110px",
+                      width: "110px",
                       borderRadius: "15px",
                       overflow: "hidden",
                       border: "3px solid #fff",
@@ -218,7 +285,9 @@ const AddProductComponent = (props) => {
                         "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
                     }}
                   >
-                    <Image src={image ? URL.createObjectURL(image) : imgbg} />
+                    <Image
+                      src={image ? URL.createObjectURL(image) : productDefault}
+                    />
                   </Stack>
                   <Stack
                     sx={{
@@ -267,9 +336,9 @@ const AddProductComponent = (props) => {
                   </Stack>
                 </Stack>
               </Grid>
-              <Grid xs={8.6}>
+              <Grid xs={8.8}>
                 <Stack sx={{ paddingTop: "20px" }}>
-                  <Grid container spacing={4}>
+                  <Grid container spacing={3}>
                     <Grid xs={4}>
                       <Typography
                         sx={{
@@ -379,27 +448,8 @@ const AddProductComponent = (props) => {
               </Grid>
             </Grid>
           </Stack>
-          <Stack sx={{ padding: "30px" }}>
-            <Grid container spacing={4}>
-              <Grid xs={6}>
-                <Typography
-                  sx={{
-                    fontSize: "15px",
-                    fontWeight: "bold",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Model:
-                </Typography>
-                <InputComponent
-                  vInput={stateProduct.type}
-                  onChangeInput={handleOnChange}
-                  nameInput="model"
-                  placeholder="Model ..."
-                  bgInput="#fff"
-                  borderInput="1px solid #3F0072"
-                />
-              </Grid>
+          <Stack sx={{ padding: "20px 20px 50px" }}>
+            <Grid container spacing={3}>
               <Grid xs={6}>
                 <Typography
                   sx={{
@@ -457,7 +507,26 @@ const AddProductComponent = (props) => {
                   borderInput="1px solid #3F0072"
                 />
               </Grid>
-              <Grid xs={3}>
+              <Grid xs={6}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Model:
+                </Typography>
+                <InputComponent
+                  vInput={stateProduct.type}
+                  onChangeInput={handleOnChange}
+                  nameInput="model"
+                  placeholder="Model ..."
+                  bgInput="#fff"
+                  borderInput="1px solid #3F0072"
+                />
+              </Grid>
+              <Grid xs={6}>
                 <Typography
                   sx={{
                     fontSize: "15px",
@@ -522,6 +591,25 @@ const AddProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
+                  Limit Setting:
+                </Typography>
+                <InputComponent
+                  vInput={stateProduct.type}
+                  onChangeInput={handleOnChange}
+                  nameInput="limitSetting"
+                  placeholder="Limit ..."
+                  bgInput="#fff"
+                  borderInput="1px solid #3F0072"
+                />
+              </Grid>
+              <Grid xs={3}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
                   Price:
                 </Typography>
                 <InputComponent
@@ -544,8 +632,7 @@ const AddProductComponent = (props) => {
                   Amount:
                 </Typography>
                 <InputComponent
-                  vInput={stateProduct.type}
-                  onChangeInput={handleOnChange}
+                  vInput={amount}
                   nameInput="amount"
                   placeholder="Amount ..."
                   bgInput="#fff"
@@ -581,33 +668,22 @@ const AddProductComponent = (props) => {
                 >
                   Import Tax:
                 </Typography>
-                <InputComponent
-                  vInput={stateProduct.type}
-                  onChangeInput={handleOnChange}
-                  nameInput="importTax"
-                  placeholder="Import Tax ..."
-                  bgInput="#fff"
-                  borderInput="1px solid #3F0072"
-                />
-              </Grid>
-              <Grid xs={3}>
-                <Typography
-                  sx={{
-                    fontSize: "15px",
-                    fontWeight: "bold",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Vat Import:
-                </Typography>
-                <InputComponent
-                  vInput={stateProduct.type}
-                  onChangeInput={handleOnChange}
-                  nameInput="vatImport"
-                  placeholder="%"
-                  bgInput="#fff"
-                  borderInput="1px solid #3F0072"
-                />
+                <Stack sx={{ width: "100%" }}>
+                  <Select
+                    onChange={handleSelectImportTax}
+                    value={importTax}
+                    displayEmpty
+                    sx={{
+                      height: "50px",
+                      border: "1px solid #3F0072",
+                      textAlign: "center",
+                      background: "#fff",
+                    }}
+                  >
+                    <MenuItem value="10">10%</MenuItem>
+                    <MenuItem value="8">8%</MenuItem>
+                  </Select>
+                </Stack>
               </Grid>
               <Grid xs={3}>
                 <Typography
@@ -674,11 +750,73 @@ const AddProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
+                  Vat Import:
+                </Typography>
+                <Stack sx={{ width: "100%" }}>
+                  <Select
+                    onChange={handleSelectVatImport}
+                    value={vatImport}
+                    displayEmpty
+                    sx={{
+                      height: "50px",
+                      border: "1px solid #3F0072",
+                      textAlign: "center",
+                      background: "#fff",
+                    }}
+                  >
+                    <MenuItem value="10">10%</MenuItem>
+                    <MenuItem value="8">8%</MenuItem>
+                  </Select>
+                </Stack>
+              </Grid>
+              <Grid xs={3}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Cost Import Tax:
+                </Typography>
+                <InputComponent
+                  vInput={costImportTax}
+                  nameInput="costImportTax"
+                  placeholder="Cost Import Tax  ..."
+                  bgInput="#fff"
+                  borderInput="1px solid #3F0072"
+                />
+              </Grid>
+              <Grid xs={3}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Cost Import / Unit:
+                </Typography>
+                <InputComponent
+                  vInput={productFee}
+                  nameInput="productFee"
+                  placeholder="Product Fee  ..."
+                  bgInput="#fff"
+                  borderInput="1px solid #3F0072"
+                />
+              </Grid>
+              <Grid xs={3}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
                   Total Fee:
                 </Typography>
                 <InputComponent
-                  vInput={stateProduct.type}
-                  onChangeInput={handleOnChange}
+                  vInput={totalFee}
                   nameInput="totalFee"
                   placeholder="Total Fee  ..."
                   bgInput="#fff"
@@ -708,6 +846,144 @@ const AddProductComponent = (props) => {
                       background: "#fff",
                     }}
                   />
+                </Stack>
+              </Grid>
+              <Grid xs={2}>
+                <Stack
+                  sx={{
+                    flexDirection: "row",
+                    height: "15vh",
+                    width: "100%",
+                  }}
+                >
+                  <Stack
+                    sx={{
+                      width: "100%",
+                      background: "#F2F3F5",
+                      position: "relative",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "10px",
+                      cursor: "pointer",
+                      borderRadius: "5px",
+                      border: "1px dashed #3F0072",
+                      boxShadow:
+                        "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
+                    }}
+                  >
+                    <Image
+                      src={folder}
+                      style={{ height: "35px", width: "35px" }}
+                    />
+                    <input
+                      style={{
+                        position: "absolute",
+                        opacity: 0,
+                        zIndex: "1",
+                        cursor: "pointer",
+                        width: "100%",
+                        height: "100%",
+                        top: 0,
+                        left: 0,
+                      }}
+                      ref={inputFileRef}
+                      type="file"
+                      onChange={handleUploadDocument}
+                      multiple
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Upload
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Document
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Grid>
+              <Grid xs={10}>
+                <Stack
+                  sx={{
+                    flexDirection: "row",
+                    height: "15vh",
+                    width: "100%",
+                    overflow: "hidden",
+                    border: "1px solid #3F0072",
+                    borderRadius: "5px",
+                  }}
+                >
+                  <Stack
+                    sx={{
+                      flexDirection: "row",
+                      padding: "0 20px",
+                      width: "100%",
+                      alignItems: "center",
+                      overflow: "auto",
+                    }}
+                  >
+                    {fileDocumentList.length > 0 && (
+                      <>
+                        {fileDocumentList.map((file, index) => (
+                          <Stack
+                            sx={{
+                              height: "8vh",
+                              flexDirection: "row",
+                              border: "0.1px solid #3F0072",
+                              padding: "10px",
+                              alignItems: "center",
+                              borderRadius: "5px",
+                              background: "#F2F3F5",
+                              marginRight:
+                                index === fileDocumentList.length - 1
+                                  ? "0"
+                                  : "10px",
+                            }}
+                            key={index}
+                          >
+                            <Image
+                              src={
+                                imageConfig[file.type.split("/")[1]] ||
+                                imageConfig["default"]
+                              }
+                              style={{ width: "30px", height: "30px" }}
+                            />
+                            <Typography
+                              sx={{
+                                fontSize: "13px",
+                                padding: "10px",
+                              }}
+                            >
+                              {file.name.split(".")[0].length > 10
+                                ? file.name.split(".")[0].slice(0, 10) + "..."
+                                : file.name}
+                            </Typography>
+                            <Stack
+                              sx={{
+                                marginLeft: "auto",
+                                background: "#fff",
+                                cursor: "pointer",
+                                borderRadius: " 50%",
+                              }}
+                              onClick={() => fileRemove(file)}
+                            >
+                              <HighlightOffIcon />
+                            </Stack>
+                          </Stack>
+                        ))}
+                      </>
+                    )}
+                  </Stack>
                 </Stack>
               </Grid>
               <Grid xs={6}>

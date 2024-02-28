@@ -7,7 +7,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import LocalPhoneIcon from "@mui/icons-material/LocalPhone";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import Image from "mui-image";
-import imgbg from "../../assets/images/bglogin.jpg";
+import avatar from "../../assets/images/avatardefault.png";
 
 const UserInfoPage = () => {
   const user = useSelector((state) => state.user);
@@ -32,7 +32,13 @@ const UserInfoPage = () => {
                   "rgba(20, 20, 20, 0.5) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.4) 0rem 0.125rem 0.25rem -0.0625rem",
               }}
             >
-              <Image src={imgbg} />
+              <Image
+                src={
+                  user?.image
+                    ? `${process.env.REACT_APP_UPLOAD_URL}/images/avatar/${user?.image}`
+                    : avatar
+                }
+              />
             </Stack>
           </Stack>
         </Grid>

@@ -7,10 +7,10 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Grid from "@mui/material/Unstable_Grid2";
-import avatar from "../../assets/images/bglogin.jpg";
+import avatar from "../../assets/images/avatardefault.png";
 import Avatar from "@mui/material/Avatar";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ButtonComponent from "./../../components/common/ButtonComponent/ButtonComponent";
+import ButtonComponent from "../../components/common/ButtonComponent/ButtonComponent";
 import { useQuery } from "@tanstack/react-query";
 import * as UserService from "../../service/UserService";
 import { useSelector } from "react-redux";
@@ -20,6 +20,8 @@ import UpdateUserComponent from "../../components/UpdateUserComponent/UpdateUser
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as message from "../../components/common/MessageComponent/MessageComponent";
 import DeleteModalComponent from "../../components/common/DeleteModalComponent/DeleteModalComponent";
+import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
+import { styled } from "@mui/material/styles";
 
 const UserPage = () => {
   const items = [
@@ -50,10 +52,21 @@ const UserPage = () => {
       ),
     },
   ];
+
+  const CustomWidthTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))({
+    [`& .${tooltipClasses.tooltip}`]: {
+      background: "#1465C0",
+      fontSize: "15px",
+      padding: "10px",
+    },
+  });
   const [openModalUser, setOpenModalUser] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [idUser, setIdUser] = useState("");
   const [openModalDeLete, setOpenModalDeLete] = useState(false);
+  const [stateUser, setStateUser] = useState([]);
   const user = useSelector((state) => state.user);
 
   const handleOpenAddUser = () => {
@@ -67,16 +80,20 @@ const UserPage = () => {
     setOpenDrawer(true);
     setIdUser(id);
   };
-
   const getAllUsers = async () => {
-    const res = await UserService.getAllUser(user?.access_token);
-    return { data: res?.data, key: "users" };
+    const res = await UserService.getAllUser();
+    return res;
   };
 
   const { data: users } = useQuery({
     queryKey: ["getAllUser"],
-    queryFn: () => getAllUsers(),
+    queryFn: getAllUsers,
   });
+  useEffect(() => {
+    if (users?.data?.length > 0) {
+      setStateUser(users?.data);
+    }
+  }, [users]);
 
   const handleShowModal = (id) => {
     setIdUser(id);
@@ -96,8 +113,9 @@ const UserPage = () => {
 
   useEffect(() => {
     if (dataDelete?.status === "OK") {
-      message.success("Delete User Success");
       handleCloseModal();
+      message.success("Delete User Success");
+      getAllUsers();
     } else if (dataDelete?.status === "ERR") {
       message.error(dataDelete?.message);
     }
@@ -108,7 +126,7 @@ const UserPage = () => {
   };
 
   return (
-    <Stack sx={{ padding: "35px" }}>
+    <Stack sx={{ padding: "30px" }}>
       <AddUserComponent
         openModalUser={openModalUser}
         handleCloseAddUser={handleCloseAddUser}
@@ -170,11 +188,10 @@ const UserPage = () => {
       </Stack>
       <Stack sx={{ marginTop: "30px", background: "#F2F3F5", padding: "30px" }}>
         <Grid container spacing={4}>
-          {users?.data.map((user, index) => (
+          {stateUser?.map((user, index) => (
             <Grid xs={4} key={index}>
               <Stack
                 sx={{
-                  position: "relative",
                   padding: "25px 20px",
                   background: "#fff",
                   borderRadius: "5px",
@@ -187,6 +204,7 @@ const UserPage = () => {
                     flexDirection: "row",
                     justifyContent: "center",
                     alignItems: "center",
+                    position: "relative",
                   }}
                 >
                   <Stack
@@ -206,23 +224,29 @@ const UserPage = () => {
                     >
                       <Avatar
                         alt="avatar"
-                        src={avatar}
-                        sx={{ width: 150, height: 150 }}
+                        src={
+                          user?.image
+                            ? `${process.env.REACT_APP_UPLOAD_URL}/images/avatar/${user?.image}`
+                            : avatar
+                        }
+                        sx={{ width: 120, height: 120 }}
                       />
                       <Stack
                         sx={{
                           position: "absolute",
-                          background: "rgba(255, 255, 255, 0.8)",
-                          height: "30px",
-                          width: "140px",
-                          rotate: "38deg",
+                          background: "#1465C0",
+                          height: "20%",
+                          width: "60%",
+                          rotate: "45deg",
                           top: "18px",
-                          left: "48px",
+                          left: "65px",
                           alignItems: "center",
                           justifyContent: "center",
-                          fontSize: "20px",
+                          fontSize: "17px",
                           fontWeight: "bold",
-                          color: "#000",
+                          color: "#fff",
+                          borderBottomLeftRadius: "25px",
+                          borderBottomRightRadius: "25px",
                         }}
                       >
                         {user.isAdmin ? "Admin" : "User"}
@@ -232,8 +256,8 @@ const UserPage = () => {
                   <Stack
                     sx={{
                       position: "absolute",
-                      top: "20px",
-                      right: "20px",
+                      top: "0",
+                      right: "0",
                       background: "#1465C0",
                       borderRadius: "5px",
                       boxShadow:
@@ -275,7 +299,7 @@ const UserPage = () => {
                 >
                   {user.name}
                 </Typography>
-                <Stack sx={{}}>
+                <Stack>
                   <Stack
                     sx={{
                       flexDirection: "row",
@@ -285,63 +309,70 @@ const UserPage = () => {
                     <Typography
                       sx={{
                         marginRight: "10px",
-                        fontSize: "16px",
                       }}
                     >
                       ID :
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: "16px",
                         color: "#1465C0",
                         fontWeight: "bold",
-                        marginLeft: "34px",
+                        marginLeft: "29px",
                       }}
                     >
-                      {user.idLuxas}
+                      {user?.idLuxas}
                     </Typography>
                   </Stack>
                   <Stack
                     sx={{
-                      flexDirection: "row",
                       marginBottom: "15px",
+                      flexDirection: "row",
                     }}
                   >
-                    <Typography
-                      sx={{
-                        fontSize: "16px",
-                      }}
-                    >
+                    <Typography sx={{ marginRight: "10px" }}>
                       Email :
                     </Typography>
                     <Typography
                       sx={{
-                        marginLeft: "16px",
-                        fontSize: "16px",
                         color: "#1465C0",
                         fontWeight: "bold",
+                        marginLeft: "5px",
                       }}
                     >
-                      {user.email}
+                      {user?.email.length > 20
+                        ? user?.email.slice(0, 17)
+                        : user?.email}
                     </Typography>
+                    {user?.email.length > 20 ? (
+                      <CustomWidthTooltip title={user?.email} placement="top">
+                        <Typography
+                          sx={{
+                            marginLeft: "5px",
+                            background: "#F2F3F5",
+                            padding: "0 5px",
+                            cursor: "pointer",
+                            boxShadow:
+                              "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
+                          }}
+                        >
+                          ...
+                        </Typography>
+                      </CustomWidthTooltip>
+                    ) : (
+                      ""
+                    )}
                   </Stack>
                   <Stack sx={{ flexDirection: "row", marginBottom: "15px" }}>
-                    <Typography
-                      sx={{
-                        fontSize: "16px",
-                      }}
-                    >
+                    <Typography sx={{ marginRight: "10px" }}>
                       Phone :
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: "16px",
                         color: "#1465C0",
                         fontWeight: "bold",
-                        marginLeft: "10px",
                       }}
                     >
-                      {user.phone}
+                      {user?.phone}
                     </Typography>
                   </Stack>
                 </Stack>
@@ -355,6 +386,7 @@ const UserPage = () => {
         setOpenDrawer={setOpenDrawer}
         idUser={idUser}
         setIdUser={setIdUser}
+        getAllUsers={() => getAllUsers()}
       />
       <DeleteModalComponent
         openModalDeLete={openModalDeLete}

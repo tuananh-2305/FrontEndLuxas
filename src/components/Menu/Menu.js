@@ -33,7 +33,7 @@ const Menu = (props) => {
   return (
     <Stack
       sx={{
-        width: showNavbar ? "100%" : "110px",
+        width: showNavbar ? "300px" : "110px",
         backgroundColor: "#F1F3F5",
         padding: showNavbar ? "40px 30px" : "40px 20px",
         height: "100vh",

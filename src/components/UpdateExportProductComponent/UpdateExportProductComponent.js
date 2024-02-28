@@ -6,6 +6,7 @@ import Image from "mui-image";
 import imgbg from "../../assets/images/bg7.jpg";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useMutationHooks } from "../../hook/useMutationHook";
+import * as ProductService from "../../service/ProductService";
 import * as ExportProductService from "../../service/ExportProductService";
 import * as message from "../common/MessageComponent/MessageComponent";
 import InputNumberComponent from "../common/InputNumberComponent/InputNumberComponent";
@@ -16,23 +17,28 @@ const UpdateExportProductComponent = (props) => {
     partName: "",
     model: "",
     shCode: "",
-    image: "1",
+    image: "",
     saleForCompany: "",
-    quantity: "",
-    unit: "",
-    price: "",
-    amount: "",
-    customerSevice: "",
-    vat: "",
-    shippingFee: "",
-    commission: "",
-    feesIncurred: "",
-    profit: "",
+    quantity: 0,
+    unit: 0,
+    price: 0,
+    amount: 0,
+    customerSevice: 0,
+    vat: 0,
+    shippingFee: 0,
+    commission: 0,
+    feesIncurred: 0,
+    profit: 0,
     note: "",
   });
-  const { open, idProduct, setOpenDrawer } = props;
+  const { open, idProduct, setOpenDrawer, luxasCode, getAllExportProduct } =
+    props;
 
   const [productDetails, setProductDetails] = useState(initial());
+  const [qtyExportProduct, setQtyExportProduct] = useState(0);
+  const [quantityProduct, setQuantityProduct] = useState({
+    quantity: 0,
+  });
 
   const fetchGetDetailsProduct = async (idProduct) => {
     const res = await ExportProductService.getDetailsExportProduct(idProduct);
@@ -57,14 +63,29 @@ const UpdateExportProductComponent = (props) => {
         profit: res?.data.profit,
         note: res?.data.note,
       });
+      setQtyExportProduct(res?.data.quantity);
     }
   };
 
-  useEffect(() => {
-    if (idProduct && open) {
-      fetchGetDetailsProduct(idProduct);
+  const fetchGetQuantityProduct = async (luxasCode) => {
+    const res = await ProductService.getDetailsProductByCode(luxasCode);
+    if (res?.data) {
+      setQuantityProduct({
+        quantity: res?.data.quantity,
+      });
     }
-  }, [idProduct, open]);
+  };
+  const [valueInputOnChange, setValueInputOnChange] = useState(0);
+
+  useEffect(() => {
+    if (idProduct && open && luxasCode) {
+      fetchGetDetailsProduct(idProduct);
+      fetchGetQuantityProduct(luxasCode);
+    }
+  }, [idProduct, open, luxasCode]);
+
+  const maxQuantity =
+    Number(quantityProduct?.quantity) + Number(qtyExportProduct);
 
   const mutationUpdate = useMutationHooks((data) => {
     const { id, ...rest } = data;
@@ -75,8 +96,9 @@ const UpdateExportProductComponent = (props) => {
 
   useEffect(() => {
     if (dataUpdate?.status === "OK") {
-      message.success("Update Product Success");
       closeProductDrawer();
+      message.success("Update Product Success");
+      getAllExportProduct();
     } else if (dataUpdate?.status === "ERR") {
       message.error(dataUpdate?.message);
     }
@@ -88,6 +110,14 @@ const UpdateExportProductComponent = (props) => {
     setProductDetails(initial());
   };
 
+  const handleOnChangeQty = (event, val) => {
+    setValueInputOnChange(event.target.value ? event.target.value : val);
+    setProductDetails({
+      ...productDetails,
+      quantity: val ? val : event.target.value,
+    });
+  };
+
   const handleOnChangeDetails = (e) => {
     setProductDetails({
       ...productDetails,
@@ -96,7 +126,14 @@ const UpdateExportProductComponent = (props) => {
   };
 
   const handleUpDateProduct = (idProduct) => {
-    mutationUpdate.mutate({ id: idProduct, productDetails });
+    if (valueInputOnChange < 1 || valueInputOnChange > maxQuantity) {
+      message.warning(
+        `Quantity of products must be less than or equal to ${maxQuantity}`
+      );
+      setValueInputOnChange(maxQuantity);
+    } else {
+      mutationUpdate.mutate({ id: idProduct, productDetails });
+    }
   };
 
   return (
@@ -150,7 +187,13 @@ const UpdateExportProductComponent = (props) => {
                     "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
                 }}
               >
-                <Image src={imgbg} />
+                <Image
+                  src={
+                    productDetails?.image
+                      ? `${process.env.REACT_APP_UPLOAD_URL}/images/products/${productDetails?.image}`
+                      : imgbg
+                  }
+                />
               </Stack>
             </Stack>
           </Grid>
@@ -169,7 +212,7 @@ const UpdateExportProductComponent = (props) => {
                   </Typography>
                   <InputComponent
                     vInput={productDetails.saleForCompany}
-                    // onChangeInput={handleOnChange}
+                    onChangeInput={handleOnChangeDetails}
                     nameInput="saleForCompany"
                     placeholder="Sale For Company ..."
                     bgInput="#fff"
@@ -284,9 +327,10 @@ const UpdateExportProductComponent = (props) => {
                   Quailty:
                 </Typography>
                 <InputNumberComponent
-                  // onChange={handleOnChangeQty}
+                  name="quantity"
+                  onChange={handleOnChangeQty}
                   value={Number(productDetails?.quantity)}
-                  valueMax={Number(productDetails?.quantity)}
+                  valueMax={maxQuantity}
                   valueMin={1}
                 />
               </Stack>
@@ -321,7 +365,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.price}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="price"
                 placeholder="Price ..."
                 bgInput="#fff"
@@ -340,7 +384,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.amount}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="amount"
                 placeholder="Amount ..."
                 bgInput="#fff"
@@ -359,7 +403,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.customerSevice}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="customerSevice"
                 placeholder="Customer Sevice ..."
                 bgInput="#fff"
@@ -378,7 +422,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.vat}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="vat"
                 placeholder="Vat ..."
                 bgInput="#fff"
@@ -397,7 +441,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.shippingFee}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="shippingFee"
                 placeholder="Shipping Fee ..."
                 bgInput="#fff"
@@ -416,7 +460,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.commission}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="commission"
                 placeholder="Commission..."
                 bgInput="#fff"
@@ -435,7 +479,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.feesIncurred}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="feesIncurred"
                 placeholder="Fees Incurred ..."
                 bgInput="#fff"
@@ -454,7 +498,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.profit}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="profit"
                 placeholder="Profit..."
                 bgInput="#fff"
@@ -473,7 +517,7 @@ const UpdateExportProductComponent = (props) => {
               </Typography>
               <InputComponent
                 vInput={productDetails?.note}
-                // onChangeInput={handleOnChange}
+                onChangeInput={handleOnChangeDetails}
                 nameInput="note"
                 placeholder="Note  ..."
                 bgInput="#fff"

@@ -1,7 +1,7 @@
 import React from "react";
 import { Stack, Typography } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
-import bglogin from "../../assets/images/bglogin.jpg";
+import avatar from "../../assets/images/avatardefault.png";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
@@ -108,7 +108,11 @@ const Header = (props) => {
         >
           <Avatar
             alt="avatar"
-            src={bglogin}
+            src={
+              user?.image
+                ? `${process.env.REACT_APP_UPLOAD_URL}/images/avatar/${user?.image}`
+                : avatar
+            }
             sx={{
               width: 32,
               height: 32,

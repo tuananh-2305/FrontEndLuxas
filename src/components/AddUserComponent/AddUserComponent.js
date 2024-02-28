@@ -13,13 +13,12 @@ import ButtonComponent from "../common/ButtonComponent/ButtonComponent";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as UserService from "../../service/UserService";
-// import { useSelector } from "react-redux";
 import * as message from "../common/MessageComponent/MessageComponent";
 
 const AddUserComponent = (props) => {
   const initial = () => ({
     isAdmin: "false",
-    image: "1",
+    image: "",
     idLuxas: "",
     name: "",
     email: "",
@@ -29,33 +28,15 @@ const AddUserComponent = (props) => {
   const { openModalUser, handleCloseAddUser } = props;
   const [stateUser, setStateUser] = useState(initial());
   const [selectStatus, setSelectStatus] = useState("false");
+  const [avatar, setAvatar] = useState("");
 
-  // const user = useSelector((state) => state.user);
-
-  const mutationUser = useMutationHooks((data) => {
-    const { isAdmin, image, idLuxas, name, email, phone, password } = data;
-    const res = UserService.registerUser({
-      isAdmin,
-      image,
-      idLuxas,
-      name,
-      email,
-      phone,
-      password,
+  const handleAvatar = (e) => {
+    setAvatar(e.target.files[0]);
+    setStateUser({
+      ...stateUser,
+      image: e.target.files[0],
     });
-    return res;
-  });
-  const { data } = mutationUser;
-
-  useEffect(() => {
-    if (data?.status === "OK") {
-      handleCloseAddUser();
-      message.success("Add Product Success");
-    } else if (data?.status === "ERR") {
-      message.error(data?.message);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  };
 
   const handleOnChange = (e) => {
     setStateUser({
@@ -71,8 +52,31 @@ const AddUserComponent = (props) => {
     });
   };
 
+  const mutationUser = useMutationHooks(async (data) => {
+    const res = await UserService.registerUser(data);
+    return res;
+  });
+  const { data } = mutationUser;
+
+  useEffect(() => {
+    if (data?.status === "OK") {
+      handleCloseAddUser();
+      message.success("Add Product Success");
+    } else if (data?.status === "ERR") {
+      message.error(data?.message);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
   const handleAddUser = () => {
-    mutationUser.mutate(stateUser);
+    const formData = new FormData();
+
+    for (const key in stateUser) {
+      const value = stateUser[key];
+      formData.append(key, value);
+    }
+
+    mutationUser.mutate(formData);
   };
 
   return (
@@ -126,7 +130,7 @@ const AddUserComponent = (props) => {
                     "rgba(20, 20, 20, 0.5) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.4) 0rem 0.125rem 0.25rem -0.0625rem",
                 }}
               >
-                <Image src={imgbg} />
+                <Image src={avatar ? URL.createObjectURL(avatar) : imgbg} />
               </Stack>
               <Stack
                 sx={{
@@ -153,11 +157,7 @@ const AddUserComponent = (props) => {
                     opacity: "0",
                   }}
                 >
-                  <InputBase
-                    type="file"
-                    value={stateUser.type}
-                    onChange={handleOnChange}
-                  />
+                  <InputBase type="file" onChange={handleAvatar} />
                 </Stack>
                 <Stack
                   sx={{

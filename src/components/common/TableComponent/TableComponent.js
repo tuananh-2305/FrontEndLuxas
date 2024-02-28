@@ -1,65 +1,90 @@
 import React from "react";
-import { Space, Table, Tag } from "antd";
-import { Stack } from "@mui/material";
-const { Column, ColumnGroup } = Table;
+import { Table } from "antd";
+const columns = [
+  {
+    title: "Full Name",
+    width: 100,
+    dataIndex: "name",
+    key: "name",
+    fixed: "left",
+  },
+  {
+    title: "Age",
+    width: 100,
+    dataIndex: "age",
+    key: "age",
+    fixed: "left",
+    sorter: true,
+  },
+  {
+    title: "Column 1",
+    dataIndex: "address",
+    key: "1",
+  },
+  {
+    title: "Column 2",
+    dataIndex: "address",
+    key: "2",
+  },
+  {
+    title: "Column 3",
+    dataIndex: "address",
+    key: "3",
+  },
+  {
+    title: "Column 4",
+    dataIndex: "address",
+    key: "4",
+  },
+  {
+    title: "Column 5",
+    dataIndex: "address",
+    key: "5",
+  },
+  {
+    title: "Column 6",
+    dataIndex: "address",
+    key: "6",
+  },
+  {
+    title: "Column 7",
+    dataIndex: "address",
+    key: "7",
+  },
+  {
+    title: "Column 8",
+    dataIndex: "address",
+    key: "8",
+  },
+  {
+    title: "Action",
+    key: "operation",
+    fixed: "right",
+    width: 100,
+    render: () => <>action</>,
+  },
+];
 const data = [
   {
     key: "1",
-    firstName: "John",
-    lastName: "Brown",
+    name: "John Brown",
     age: 32,
-    address: "New York No. 1 Lake Park",
-    tags: ["nice", "developer"],
+    address: "New York Park",
   },
   {
     key: "2",
-    firstName: "Jim",
-    lastName: "Green",
-    age: 42,
-    address: "London No. 1 Lake Park",
-    tags: ["loser"],
-  },
-  {
-    key: "3",
-    firstName: "Joe",
-    lastName: "Black",
-    age: 32,
-    address: "Sydney No. 1 Lake Park",
-    tags: ["cool", "teacher"],
+    name: "Jim Green",
+    age: 40,
+    address: "London Park",
   },
 ];
-const App = () => (
-  <Table dataSource={data}>
-    <ColumnGroup title="Name">
-      <Column title="First Name" dataIndex="firstName" key="firstName" />
-      <Column title="Last Name" dataIndex="lastName" key="lastName" />
-    </ColumnGroup>
-    <Column title="Age" dataIndex="age" key="age" />
-    <Column title="Address" dataIndex="address" key="address" />
-    <Column
-      title="Tags"
-      dataIndex="tags"
-      key="tags"
-      render={(tags) => (
-        <>
-          {tags.map((tag) => (
-            <Tag color="blue" key={tag}>
-              {tag}
-            </Tag>
-          ))}
-        </>
-      )}
-    />
-    <Column
-      title="Action"
-      key="action"
-      render={(_, record) => (
-        <Space size="middle">
-          <Stack>Invite {record.lastName}</Stack>
-          <Stack>Delete</Stack>
-        </Space>
-      )}
-    />
-  </Table>
+const TableComponent = () => (
+  <Table
+    columns={columns}
+    dataSource={data}
+    scroll={{
+      x: 1300,
+    }}
+  />
 );
-export default App;
+export default TableComponent;

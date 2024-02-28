@@ -36,16 +36,19 @@ const AddFileComponent = (props) => {
       setFileList(updateList);
     }
   };
+
   const fileRemove = (file) => {
     const updatedList = [...fileList];
     updatedList.splice(fileList.indexOf(file), 1);
     setFileList(updatedList);
   };
-  const mutationUpload = useMutationHooks((data) => {
-    const res = UploadFileService.upLoadFile(data);
+
+  const mutationUpload = useMutationHooks(async (data) => {
+    const res = await UploadFileService.upLoadFile(data);
     return res;
   });
   const { data } = mutationUpload;
+
   useEffect(() => {
     if (data?.status === "OK") {
       message.success("Add File Success");

@@ -26,7 +26,6 @@ const DefaultComponent = ({ children }) => {
           sx={{
             position: "fixed",
             zIndex: 50,
-            width: "300px",
           }}
         >
           <Menu showNavbar={showNavbar} user={user} />

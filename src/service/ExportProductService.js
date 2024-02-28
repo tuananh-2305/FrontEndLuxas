@@ -30,9 +30,16 @@ export const getDetailsExportProduct = async (id) => {
   return res.data;
 };
 
-export const getAllExportProduct = async () => {
-  const res = await axios.get(
-    `${process.env.REACT_APP_API_URL}/export-product/get-all-export-product`
-  );
+export const getAllExportProduct = async (search) => {
+  let res = {};
+  if (search?.search?.length > 0) {
+    res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/export-product/get-all-export-product?filter=${search?.keySearch}&filter=${search?.search}`
+    );
+  } else {
+    res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/export-product/get-all-export-product`
+    );
+  }
   return res.data;
 };

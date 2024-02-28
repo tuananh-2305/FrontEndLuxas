@@ -4,14 +4,12 @@ import React, { useState, useRef, useEffect } from "react";
 import InputComponent from "../common/InputComponent/InputComponent";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Image from "mui-image";
-import imgbg from "../../assets/images/bg7.jpg";
 import Grid from "@mui/material/Unstable_Grid2";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as UserService from "../../service/UserService";
 import * as message from "../common/MessageComponent/MessageComponent";
-import { useSelector } from "react-redux";
 const UpdateUserComponent = (props) => {
   const initial = () => ({
     isAdmin: false,
@@ -23,13 +21,11 @@ const UpdateUserComponent = (props) => {
     password: "",
   });
 
-  const { open, idUser, setOpenDrawer, setIdUser } = props;
+  const { open, idUser, setOpenDrawer, setIdUser, getAllUsers } = props;
   const [image, setImage] = useState("");
   const [inforUser, setInforUser] = useState(initial());
-
+  console.log(image);
   const inputRef = useRef(null);
-
-  const user = useSelector((state) => state.user);
 
   const fetchGetDetailsUser = async (idUser) => {
     const res = await UserService.getDetailsUser(idUser);
@@ -51,11 +47,6 @@ const UpdateUserComponent = (props) => {
     }
   }, [idUser, open]);
 
-  const getAllUsers = async () => {
-    const res = await UserService.getAllUser(user?.access_token);
-    return { data: res?.data, key: "users" };
-  };
-
   const mutationUpdate = useMutationHooks((data) => {
     const { id, ...rest } = data;
     const res = UserService.updateUser(id, { ...rest });
@@ -65,9 +56,9 @@ const UpdateUserComponent = (props) => {
 
   useEffect(() => {
     if (dataUpdate?.status === "OK") {
-      getAllUsers();
       handleCloseDrawer();
       message.success("Update User Success");
+      getAllUsers();
     } else if (dataUpdate?.status === "ERR") {
       message.error(dataUpdate?.message);
     }
@@ -152,7 +143,13 @@ const UpdateUserComponent = (props) => {
                     "rgba(20, 20, 20, 0.5) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.4) 0rem 0.125rem 0.25rem -0.0625rem",
                 }}
               >
-                <Image src={image ? URL.createObjectURL(image) : imgbg} />
+                <Image
+                  src={
+                    inforUser?.image
+                      ? `${process.env.REACT_APP_UPLOAD_URL}/images/avatar/${inforUser?.image}`
+                      : ""
+                  }
+                />
               </Stack>
               <Stack
                 sx={{
