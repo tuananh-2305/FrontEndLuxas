@@ -25,7 +25,7 @@ const AddUserComponent = (props) => {
     phone: "",
     password: "",
   });
-  const { openModalUser, handleCloseAddUser } = props;
+  const { openModalUser, handleCloseAddUser, getAllUsers } = props;
   const [stateUser, setStateUser] = useState(initial());
   const [selectStatus, setSelectStatus] = useState("false");
   const [avatar, setAvatar] = useState("");
@@ -62,6 +62,7 @@ const AddUserComponent = (props) => {
     if (data?.status === "OK") {
       handleCloseAddUser();
       message.success("Add Product Success");
+      getAllUsers();
     } else if (data?.status === "ERR") {
       message.error(data?.message);
     }

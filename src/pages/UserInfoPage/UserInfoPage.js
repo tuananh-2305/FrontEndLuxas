@@ -8,6 +8,7 @@ import LocalPhoneIcon from "@mui/icons-material/LocalPhone";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import Image from "mui-image";
 import avatar from "../../assets/images/avatardefault.png";
+import SelectYearComponent from "../../components/common/SelectYearComponent/SelectYearComponent";
 
 const UserInfoPage = () => {
   const user = useSelector((state) => state.user);
@@ -19,6 +20,9 @@ const UserInfoPage = () => {
         margin: "30px",
       }}
     >
+      <Stack>
+        <SelectYearComponent />
+      </Stack>
       <Grid container spacing={4}>
         <Grid xs={4}>
           <Stack sx={{ alignItems: "center" }}>
@@ -35,7 +39,7 @@ const UserInfoPage = () => {
               <Image
                 src={
                   user?.image
-                    ? `${process.env.REACT_APP_UPLOAD_URL}/images/avatar/${user?.image}`
+                    ? `${process.env.REACT_APP_UPLOAD_URL}/avatar/${user?.image}`
                     : avatar
                 }
               />

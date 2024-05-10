@@ -9,9 +9,10 @@ export const exportProduct = async (data) => {
 };
 
 export const updateExportProduct = async (id, data) => {
+  const dataExportProduct = data.productDetails;
   const res = await axiosJWT.put(
     `${process.env.REACT_APP_API_URL}/export-product/update-export-product/${id}`,
-    data
+    dataExportProduct
   );
   return res.data;
 };

@@ -1,25 +1,16 @@
 import { Stack, Typography } from "@mui/material";
-import React, { useContext, useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import TuneIcon from "@mui/icons-material/Tune";
 import InputComponent from "../../components/common/InputComponent/InputComponent";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import { Context } from "../../hook/useConText";
-import Pagination from "@mui/material/Pagination";
 import { useQuery } from "@tanstack/react-query";
 import * as LimitProductService from "../../service/LimitProductService";
 import Avatar from "@mui/material/Avatar";
 import { useDebounce } from "../../hook/useDebounce";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
+import { Select } from "antd";
+import TableComponent from "../../components/common/TableComponent/TableComponent";
 
 const LimitProduct = () => {
-  const { headerTableLimitName } = useContext(Context);
   const refSearch = useRef();
   const [stateLimitProduct, setStateLimitProduct] = useState([]);
   const [keySearch, setKeySearch] = useState("partName");
@@ -29,8 +20,8 @@ const LimitProduct = () => {
   const handleSearch = (e) => {
     setSearch(e.target.value);
   };
-  const handleChangeKey = (e) => {
-    setKeySearch(e.target.value);
+  const handleChangeKey = (value) => {
+    setKeySearch(value);
   };
   useEffect(() => {
     setValueSearch({
@@ -60,20 +51,160 @@ const LimitProduct = () => {
     queryKey: ["products"],
     queryFn: getAllLimitProduct,
   });
+
   useEffect(() => {
     if (products?.data?.length > 0) {
       setStateLimitProduct(products?.data);
     }
   }, [products]);
-  // const [offset, setOffset] = useState(0);
-
-  // useEffect(() => {
-  //   const onScroll = () => setOffset(window.pageYOffset);
-  //   // clean up code
-  //   window.removeEventListener("scroll", onScroll);
-  //   window.addEventListener("scroll", onScroll, { passive: true });
-  //   return () => window.removeEventListener("scroll", onScroll);
-  // }, []);
+  const dataTable =
+    stateLimitProduct?.length &&
+    stateLimitProduct?.map((product) => {
+      return { ...product, key: product._id };
+    });
+  const columns = [
+    {
+      title: "STT",
+      dataIndex: "stt",
+      render: (text, object, index) => {
+        return index + 1;
+      },
+    },
+    {
+      title: "Image",
+      dataIndex: "image",
+      render: (record) => (
+        <Avatar
+          variant="rounded"
+          sx={{
+            width: 80,
+            height: 80,
+            boxShadow:
+              "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
+          }}
+          src={
+            record
+              ? `${process.env.REACT_APP_UPLOAD_URL}/products/images/${record}`
+              : null
+          }
+        />
+      ),
+    },
+    {
+      title: "Luxas Code",
+      dataIndex: "luxasCode",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+    },
+    {
+      title: "Part Name",
+      dataIndex: "partName",
+      sorter: (a, b) => a.partName.length - b.partName.length,
+    },
+    {
+      title: "Model",
+      dataIndex: "model",
+    },
+    {
+      title: "Supplies",
+      dataIndex: "supplies",
+    },
+    {
+      title: "Supplies Address",
+      dataIndex: "suppliesAddress",
+    },
+    {
+      title: "Maker",
+      dataIndex: "maker",
+    },
+    {
+      title: "ShCode",
+      dataIndex: "shCode",
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+    },
+    {
+      title: "Limit Setting",
+      dataIndex: "limitSetting",
+    },
+    {
+      title: "Unit",
+      dataIndex: "unit",
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      sorter: (a, b) => a.price - b.price,
+      filters: [
+        {
+          text: ">= 50",
+          value: ">=",
+        },
+        {
+          text: "<= 50",
+          value: "<=",
+        },
+      ],
+      onFilter: (value, record) => {
+        if (value === ">=") {
+          return record.price >= 50;
+        }
+        return record.price <= 50;
+      },
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+    },
+    {
+      title: "Size",
+      dataIndex: "size",
+    },
+    {
+      title: "Import Tax",
+      dataIndex: "importTax",
+    },
+    {
+      title: "Vat Import",
+      dataIndex: "vatImport",
+    },
+    {
+      title: "Fee Shipping",
+      dataIndex: "feeShipping",
+    },
+    {
+      title: "Costoms Service",
+      dataIndex: "costomsService",
+    },
+    {
+      title: "Fines",
+      dataIndex: "fines",
+    },
+    {
+      title: "Cost Import /Unit",
+      dataIndex: "costImportUnit",
+    },
+    {
+      title: "Total Fee",
+      dataIndex: "totalFee",
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+    },
+    {
+      title: "Stock Local",
+      dataIndex: "stockLocal",
+    },
+    {
+      title: "Note",
+      dataIndex: "note",
+    },
+  ];
 
   return (
     <Stack sx={{ position: "relative" }}>
@@ -116,31 +247,44 @@ const LimitProduct = () => {
           <InputComponent
             placeholder="Search"
             iconInput={<SearchIcon />}
-            borderInput="1px solid #C70039"
+            borderInput="1px solid #d9d9d9"
             wInput="100%"
             bgInput="#fff"
             onChangeInput={handleSearch}
             inputRef={refSearch}
           />
         </Stack>
-        <Stack sx={{ width: "200px" }}>
+        <Stack>
           <Select
-            displayEmpty
-            value={keySearch}
-            onChange={handleChangeKey}
-            sx={{
-              height: "50px",
-              border: "1px solid #C70039",
-              textAlign: "center",
-              background: "#fff",
+            defaultValue={keySearch}
+            style={{
+              width: 150,
+              height: 50,
             }}
-          >
-            <MenuItem value="partName">Part Name</MenuItem>
-            <MenuItem value="luxasCode">Luxas Code</MenuItem>
-            <MenuItem value="model">Model</MenuItem>
-            <MenuItem value="shCode">SH Code</MenuItem>
-            <MenuItem value="importNo_VatNo">Import N.0 / Vat N.0</MenuItem>
-          </Select>
+            onChange={handleChangeKey}
+            options={[
+              {
+                value: "partName",
+                label: "Part Name",
+              },
+              {
+                value: "luxasCode",
+                label: "Luxas Code",
+              },
+              {
+                value: "model",
+                label: "Model",
+              },
+              {
+                value: "shCode",
+                label: "SH Code",
+              },
+              {
+                value: "importNo_VatNo",
+                label: "Import N.0 / Vat N.0",
+              },
+            ]}
+          />
         </Stack>
         <Stack
           sx={{
@@ -165,269 +309,15 @@ const LimitProduct = () => {
             padding: "0 30px 50px",
           }}
         >
-          <TableContainer>
-            <Table aria-label="simple table">
-              <TableHead sx={{ background: "#FFF", zIndex: "10" }}>
-                <TableRow>
-                  {headerTableLimitName.map((header, index) => (
-                    <TableCell
-                      key={index}
-                      sx={{
-                        textAlign: "center",
-                      }}
-                    >
-                      <Typography
-                        sx={{
-                          width: header.wHeader,
-                          fontWeight: "bold",
-                          color: "#C70039",
-                        }}
-                      >
-                        {header.headerLimitName}
-                      </Typography>
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              {stateLimitProduct?.map((product, index) => (
-                <TableBody sx={{ backgroundColor: "#F2F3F5" }} key={index}>
-                  <TableRow
-                    sx={{
-                      background:
-                        product?.quantity <= 1
-                          ? "#ff5050"
-                          : product?.quantity === product.limitSetting
-                          ? "#00E204"
-                          : "#F9D801",
-                    }}
-                  >
-                    <TableCell
-                      sx={{
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        fontSize: "16px",
-                        borderRight: "0.1px solid #fff",
-                      }}
-                    >
-                      {index + 1}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        color: "#FFF",
-                        borderRight: "0.1px solid #fff",
-                      }}
-                    >
-                      <Stack
-                        sx={{ justifyContent: "center", alignItems: "center" }}
-                      >
-                        <Avatar
-                          variant="rounded"
-                          sx={{
-                            width: 80,
-                            height: 80,
-                            boxShadow:
-                              "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
-                          }}
-                          src={
-                            product?.image
-                              ? `${process.env.REACT_APP_UPLOAD_URL}/images/products/${product?.image}`
-                              : null
-                          }
-                        />
-                      </Stack>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.luxasCode}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.status}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.partName}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.model}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.supplies}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.suppliesAddress}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.maker}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.shCode}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.quantity}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.limitSetting}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.unit}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.price}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.amount}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.size}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.importTax}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.vatImport}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.feeShipping}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.costomsService}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.fines}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.totalFee}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.description}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.stockLocal}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        borderRight: "0.1px solid #fff",
-                        textAlign: "center",
-                      }}
-                    >
-                      {product?.note}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              ))}
-            </Table>
-          </TableContainer>
-          <Stack sx={{ margin: "8vh 0 0 auto" }}>
-            <Pagination count={10} variant="outlined" shape="rounded" />
-          </Stack>
+          <TableComponent
+            rowClassName={(record, index) =>
+              index % 2 === 0 ? "table-row-light" : "table-row-dark"
+            }
+            data={dataTable}
+            columns={columns}
+            dataDefault={stateLimitProduct}
+            typePage="limit"
+          />
         </Stack>
       </Stack>
     </Stack>

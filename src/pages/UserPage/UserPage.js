@@ -127,10 +127,6 @@ const UserPage = () => {
 
   return (
     <Stack sx={{ padding: "30px" }}>
-      <AddUserComponent
-        openModalUser={openModalUser}
-        handleCloseAddUser={handleCloseAddUser}
-      />
       <Stack
         sx={{
           flexDirection: "row",
@@ -226,7 +222,7 @@ const UserPage = () => {
                         alt="avatar"
                         src={
                           user?.image
-                            ? `${process.env.REACT_APP_UPLOAD_URL}/images/avatar/${user?.image}`
+                            ? `${process.env.REACT_APP_UPLOAD_URL}/avatar/${user?.image}`
                             : avatar
                         }
                         sx={{ width: 120, height: 120 }}
@@ -381,6 +377,11 @@ const UserPage = () => {
           ))}
         </Grid>
       </Stack>
+      <AddUserComponent
+        openModalUser={openModalUser}
+        handleCloseAddUser={handleCloseAddUser}
+        getAllUsers={() => getAllUsers()}
+      />
       <UpdateUserComponent
         open={openDrawer}
         setOpenDrawer={setOpenDrawer}

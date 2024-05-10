@@ -25,6 +25,7 @@ const AddExportProductComponent = (props) => {
     implementer: "",
     luxasCode: "",
     partName: "",
+    exportDate: "",
     model: "",
     shCode: 0,
     image: "",
@@ -38,81 +39,54 @@ const AddExportProductComponent = (props) => {
     shippingFee: 0,
     commission: 0,
     feesIncurred: 0,
-    productFee: 0,
-    totalFee: 0,
+    costImportUnit: 0,
+    salePriceUnit: 0,
     totalExportFee: 0,
     exportFeeVat: 0,
     profit: 0,
+    profitNoVat: 0,
     note: "",
     exportCode: "",
   });
   const { openModalExport, handleCloseModalExport, idProduct } = props;
   const user = useSelector((state) => state.user);
   const [stateExportProduct, setStateExportProduct] = useState(initial());
-  const [productDetails, setProductDetails] = useState({
-    quantity: 0,
-  });
   const [amount, setAmount] = useState(parseInt(stateExportProduct.amount));
-  const [totalFee, setTotalFee] = useState(
-    parseInt(stateExportProduct.totalFee)
-  );
   const [totalExportFee, setTotalExportFee] = useState(
     parseInt(stateExportProduct.totalExportFee)
+  );
+  const [salePriceUnit, setSalePriceUnit] = useState(
+    parseInt(stateExportProduct.salePriceUnit)
   );
   const [exportFeeVat, setExportFeeVat] = useState(
     parseInt(stateExportProduct.exportFeeVat)
   );
   const [profit, setProfit] = useState(parseInt(stateExportProduct.profit));
-
-  useEffect(() => {
-    if (!openModalExport) {
-      setStateExportProduct(initial());
-      setAmount(0);
-      setTotalFee(0);
-      setTotalExportFee(0);
-      setProfit(0);
-      setExportFeeVat(0);
-    }
-  }, [openModalExport]);
-
-  useEffect(() => {
-    if (stateExportProduct.quantity && parseInt(stateExportProduct.price)) {
-      setAmount(
-        parseInt(stateExportProduct.quantity) *
-          parseInt(stateExportProduct.price)
-      );
-    }
-    if (stateExportProduct.quantity && stateExportProduct.productFee) {
-      setTotalFee(
-        Number(stateExportProduct.quantity) *
-          Number(stateExportProduct.productFee)
-      );
-    }
-    if (amount || stateExportProduct) {
-      setTotalExportFee(
-        parseInt(amount) -
-          (parseInt(stateExportProduct.shippingFee) +
-            parseInt(stateExportProduct.customerSevice) +
-            parseInt(stateExportProduct.commission) +
-            parseInt(stateExportProduct.feesIncurred))
-      );
-    }
-    if (stateExportProduct.vat && totalExportFee) {
-      const percentage =
-        (parseInt(totalExportFee) * parseInt(stateExportProduct.vat)) / 100;
-      setExportFeeVat(parseInt(totalExportFee) + percentage);
-    }
-    if (totalFee !== 0 && totalExportFee !== 0) {
-      setProfit(parseInt(totalExportFee) - parseInt(totalFee));
-    }
-  }, [stateExportProduct, amount, totalFee, totalExportFee]);
-
+  const [profitNoVat, setProfitNoVat] = useState(
+    parseInt(stateExportProduct.profitNoVat)
+  );
+  const [dataImportProduct, setDataImportProduct] = useState({
+    price: 0,
+    quantity: 0,
+    importTax: 0,
+    vatImport: 0,
+    feeShipping: 0,
+    costomsService: 0,
+    fines: 0,
+    amount: 0,
+    costImportUnit: 0,
+    costImportTax: 0,
+    totalFeeVat: 0,
+  });
+  const [quantityProduct, setQuantityProduct] = useState("");
+  const [valueNumberInput, setValueNumberInput] = useState("");
   const fetchGetDetailsProduct = async (idProduct) => {
     const res = await ProductService.getDetailsProduct(idProduct);
     if (res?.data) {
       setStateExportProduct({
         implementer: user?.name,
         luxasCode: res?.data.luxasCode,
+        exportDate: "",
         partName: res?.data.partName,
         model: res?.data.model,
         shCode: res?.data.shCode,
@@ -120,6 +94,7 @@ const AddExportProductComponent = (props) => {
         saleForCompany: "",
         quantity: res?.data.quantity,
         unit: res?.data.unit,
+        exportCode: "",
         price: 0,
         amount: 0,
         customerSevice: 0,
@@ -127,17 +102,176 @@ const AddExportProductComponent = (props) => {
         shippingFee: 0,
         commission: 0,
         feesIncurred: 0,
-        profit: 0,
-        productFee: res?.data.productFee,
+        costImportUnit: res?.data.costImportUnit,
         note: "",
-        exportCode: "",
       });
-      setProductDetails({
-        quantity: res?.data.quantity,
+      setDataImportProduct({
+        price: res?.data.price,
+        importTax: res?.data.importTax,
+        vatImport: res?.data.vatImport,
+        feeShipping: res?.data.feeShipping,
+        costomsService: res?.data.costomsService,
+        fines: res?.data.fines,
       });
       setQuantityProduct(res?.data.quantity);
     }
   };
+  useEffect(() => {
+    if (!openModalExport) {
+      setStateExportProduct(initial());
+      setAmount(0);
+      setSalePriceUnit(0);
+      setTotalExportFee(0);
+      setProfit(0);
+      setProfitNoVat(0);
+      setExportFeeVat(0);
+    }
+  }, [openModalExport]);
+
+  const handleAmountProduct = (qty, price) => {
+    const amount = Number(qty) * Number(price);
+    return amount;
+  };
+  const handleTotalSalePriceUnit = (
+    amount,
+    shippingFee,
+    customerSevice,
+    commission,
+    feesIncurred,
+    quantity
+  ) => {
+    const totalSalePriceUnit =
+      (Number(amount) +
+        Number(shippingFee) +
+        Number(customerSevice) +
+        Number(commission) +
+        Number(feesIncurred)) /
+      Number(quantity);
+    return totalSalePriceUnit;
+  };
+  const handleTotalExportFee = (
+    amount,
+    shippingFee,
+    customerSevice,
+    commission,
+    feesIncurred
+  ) => {
+    const totalExportFee =
+      Number(amount) +
+      Number(shippingFee) +
+      Number(customerSevice) +
+      Number(commission) +
+      Number(feesIncurred);
+    return totalExportFee;
+  };
+  const handleExportFeeVat = (totalExportFee, vat) => {
+    const exportFeeVat =
+      Number(totalExportFee) + (Number(totalExportFee) * Number(vat)) / 100;
+    return exportFeeVat;
+  };
+
+  const handleProfitNoVat = (salePriceUnit, quantity, costImportUnit) => {
+    const profitNoVat =
+      Number(salePriceUnit) * Number(quantity) -
+      Number(costImportUnit) * Number(quantity);
+    return profitNoVat;
+  };
+  const handleProfit = (profitNoVat, totalExportFee) => {
+    const profit = (Number(profitNoVat) / Number(totalExportFee)) * 100;
+    return profit;
+  };
+  useEffect(() => {
+    if (
+      !stateExportProduct.quantity ||
+      !stateExportProduct.price ||
+      stateExportProduct.price === ""
+    ) {
+      setAmount(0);
+      setSalePriceUnit(0);
+      setTotalExportFee(0);
+      setProfit(0);
+      setProfitNoVat(0);
+      setExportFeeVat(0);
+    }
+    if (stateExportProduct.quantity && stateExportProduct.price) {
+      const amountProduct = handleAmountProduct(
+        stateExportProduct.quantity,
+        stateExportProduct.price
+      );
+      setAmount(amountProduct.toFixed(2));
+    }
+    if (
+      amount !== 0 &&
+      stateExportProduct.quantity &&
+      stateExportProduct.quantity !== 0
+    ) {
+      const totalSalePriceUnit = handleTotalSalePriceUnit(
+        amount,
+        stateExportProduct.shippingFee,
+        stateExportProduct.customerSevice,
+        stateExportProduct.commission,
+        stateExportProduct.feesIncurred,
+        stateExportProduct.quantity
+      );
+      setSalePriceUnit(totalSalePriceUnit.toFixed(2));
+    }
+    if (amount !== 0 && stateExportProduct) {
+      const totalExportFee = handleTotalExportFee(
+        amount,
+        stateExportProduct.shippingFee,
+        stateExportProduct.customerSevice,
+        stateExportProduct.commission,
+        stateExportProduct.feesIncurred
+      );
+      setTotalExportFee(totalExportFee);
+    }
+    if (stateExportProduct.vat && totalExportFee !== 0) {
+      const exportFeeVat = handleExportFeeVat(
+        totalExportFee,
+        stateExportProduct.vat
+      );
+      setExportFeeVat(exportFeeVat);
+    }
+    if (salePriceUnit !== 0 && stateExportProduct) {
+      const profitNoVat = handleProfitNoVat(
+        salePriceUnit,
+        stateExportProduct.quantity,
+        stateExportProduct.costImportUnit
+      );
+
+      setProfitNoVat(profitNoVat.toFixed(2));
+    }
+    if (totalExportFee !== 0 && profitNoVat !== 0) {
+      const profit = handleProfit(profitNoVat, totalExportFee);
+      setProfit(profit.toFixed(2));
+    }
+    if (
+      amount !== 0 ||
+      salePriceUnit !== 0 ||
+      totalExportFee !== 0 ||
+      profitNoVat !== 0 ||
+      exportFeeVat !== 0 ||
+      totalExportFee !== 0 ||
+      profit !== 0
+    ) {
+      stateExportProduct.amount = amount;
+      stateExportProduct.salePriceUnit = salePriceUnit;
+      stateExportProduct.totalExportFee = totalExportFee;
+      stateExportProduct.exportFeeVat = exportFeeVat;
+      stateExportProduct.profitNoVat = profitNoVat;
+      stateExportProduct.totalExportFee = totalExportFee;
+      stateExportProduct.profit = profit;
+    }
+  }, [
+    stateExportProduct,
+    amount,
+    totalExportFee,
+    profitNoVat,
+    exportFeeVat,
+    profit,
+    salePriceUnit,
+  ]);
+
   const inputFileRef = useRef(null);
   const imageConfig = {
     xlsx: excelImage,
@@ -166,42 +300,70 @@ const AddExportProductComponent = (props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idProduct, openModalExport]);
-  const [quantityProduct, setQuantityProduct] = useState("");
-  const [valueNumberInput, setValueNumberInput] = useState();
-  const [valueInputOnChange, setValueInputOnChange] = useState();
 
   const handleOnChange = (e) => {
-    if (
-      e.target.name === "saleForCompany" ||
-      e.target.name === "note" ||
-      e.target.name === "exportCode"
-    ) {
-      setStateExportProduct({
-        ...stateExportProduct,
-        [e.target.name]: e.target.value,
-      });
-    } else {
-      setStateExportProduct({
-        ...stateExportProduct,
-        [e.target.name]: Number(e.target.value),
-      });
-    }
-  };
-  const handleOnChangeQty = (event, val) => {
-    console.log("event", event.target.value, "val", val);
-    setValueInputOnChange(event.target.value ? event.target.value : val);
-    setValueNumberInput(val ? val : event.target.value);
     setStateExportProduct({
       ...stateExportProduct,
-      quantity: val ? val : event.target.value,
-    });
-    setProductDetails({
-      ...productDetails,
-      quantity: Number(
-        Number(productDetails.quantity) - Number(val ? val : event.target.value)
-      ),
+      [e.target.name]: e.target.value,
     });
   };
+  const handleOnChangeQty = (value) => {
+    setValueNumberInput(value);
+    setStateExportProduct({
+      ...stateExportProduct,
+      quantity: value,
+    });
+  };
+  useEffect(() => {
+    if (dataImportProduct.price && dataImportProduct.quantity) {
+      const amountImport =
+        Number(dataImportProduct.quantity) * Number(dataImportProduct.price);
+      dataImportProduct.amount = amountImport.toFixed(2);
+    }
+    if (
+      dataImportProduct.price &&
+      dataImportProduct.quantity &&
+      dataImportProduct.importTax &&
+      dataImportProduct.feeShipping &&
+      dataImportProduct.costomsService &&
+      dataImportProduct.fines
+    ) {
+      const newCostImport =
+        Number(dataImportProduct.quantity) * Number(dataImportProduct.price) +
+        Number(dataImportProduct.feeShipping) +
+        Number(dataImportProduct.costomsService) +
+        Number(dataImportProduct.fines);
+      const newCostImportTax =
+        Number(newCostImport) +
+        (Number(newCostImport) * Number(dataImportProduct.importTax)) / 100;
+      const newCostImportUnit =
+        Number(newCostImportTax) / dataImportProduct.quantity;
+      dataImportProduct.costImportTax = newCostImportTax.toFixed(2);
+      dataImportProduct.costImportUnit = newCostImportUnit.toFixed(2);
+    }
+    if (
+      dataImportProduct.price &&
+      dataImportProduct.quantity &&
+      dataImportProduct.importTax &&
+      dataImportProduct.feeShipping &&
+      dataImportProduct.costomsService &&
+      dataImportProduct.fines &&
+      dataImportProduct.vatImport
+    ) {
+      const newCostImport =
+        Number(dataImportProduct.quantity) * Number(dataImportProduct.price) +
+        Number(dataImportProduct.feeShipping) +
+        Number(dataImportProduct.costomsService) +
+        Number(dataImportProduct.fines);
+      const newCostImportTax =
+        Number(newCostImport) +
+        (Number(newCostImport) * Number(dataImportProduct.importTax)) / 100;
+      const newTotalFeeVat =
+        Number(newCostImportTax) +
+        (Number(newCostImportTax) * Number(dataImportProduct.vatImport)) / 100;
+      dataImportProduct.totalFeeVat = newTotalFeeVat.toFixed(2);
+    }
+  }, [dataImportProduct]);
 
   const mutationUpdate = useMutationHooks((data) => {
     const { id, ...rest } = data;
@@ -213,22 +375,16 @@ const AddExportProductComponent = (props) => {
     const res = ExportProductService.exportProduct(data);
     return res;
   });
-
   const { data } = mutation;
-
   useEffect(() => {
     if (data?.status === "OK") {
-      if (Number(data?.data.quantity) === Number(quantityProduct)) {
-        mutationUpdate.mutate({
-          id: idProduct,
-          productDetails: {
-            quantity: Number(
-              Number(quantityProduct) - Number(data?.data.quantity)
-            ),
-          },
-        });
-      } else {
-        mutationUpdate.mutate({ id: idProduct, productDetails });
+      if (Number(data?.data.quantity) <= Number(quantityProduct)) {
+        const formData = new FormData();
+        for (const key in dataImportProduct) {
+          const value = dataImportProduct[key];
+          formData.append(key, value);
+        }
+        mutationUpdate.mutate({ id: idProduct, formData });
       }
       message.success("Export Product Success");
       handleCloseModalExport();
@@ -240,13 +396,17 @@ const AddExportProductComponent = (props) => {
 
   const handleExportProduct = () => {
     const formData = new FormData();
-
-    if (valueInputOnChange < 1 || valueInputOnChange > quantityProduct) {
+    if (valueNumberInput < 1 || valueNumberInput > quantityProduct) {
       message.warning(
         `Quantity of products must be less than or equal to ${quantityProduct}`
       );
-      setValueInputOnChange(quantityProduct);
+      setValueNumberInput(quantityProduct);
     } else {
+      setDataImportProduct({
+        ...dataImportProduct,
+        quantity:
+          parseInt(quantityProduct) - parseInt(stateExportProduct.quantity),
+      });
       for (let i = 0; i < fileDocumentList.length; i++) {
         formData.append("documentFile", fileDocumentList[i]);
       }
@@ -263,7 +423,7 @@ const AddExportProductComponent = (props) => {
         sx={{
           position: "absolute",
           background: "#fff",
-          width: "60%",
+          width: "65%",
           height: "80%",
           overflow: "hidden",
           top: "50%",
@@ -331,7 +491,7 @@ const AddExportProductComponent = (props) => {
                     <Image
                       src={
                         stateExportProduct?.image
-                          ? `${process.env.REACT_APP_UPLOAD_URL}/images/products/${stateExportProduct?.image}`
+                          ? `${process.env.REACT_APP_UPLOAD_URL}/products/images/${stateExportProduct?.image}`
                           : imgbg
                       }
                     />
@@ -378,7 +538,7 @@ const AddExportProductComponent = (props) => {
                         borderInput="1px solid #004225"
                       />
                     </Grid>
-                    <Grid xs={8}>
+                    <Grid xs={4}>
                       <Typography
                         sx={{
                           fontSize: "15px",
@@ -394,6 +554,25 @@ const AddExportProductComponent = (props) => {
                         placeholder="Implementer ..."
                         bgInput="#fff"
                         borderInput="1px solid #004225"
+                      />
+                    </Grid>
+                    <Grid xs={4}>
+                      <Typography
+                        sx={{
+                          fontSize: "15px",
+                          fontWeight: "bold",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Export Date:
+                      </Typography>
+                      <InputComponent
+                        bgInput="#fff"
+                        borderInput="1px solid #004225"
+                        typeInput="date"
+                        vInput={stateExportProduct.type}
+                        onChangeInput={handleOnChange}
+                        nameInput="exportDate"
                       />
                     </Grid>
                     <Grid xs={4}>
@@ -466,18 +645,17 @@ const AddExportProductComponent = (props) => {
                       marginBottom: "8px",
                     }}
                   >
-                    Quailty:
+                    Quantity: {quantityProduct}
                   </Typography>
                   <InputNumberComponent
                     name="quantity"
+                    border="1px solid #004225"
+                    height="50px"
+                    width="100%"
+                    min={1}
+                    max={quantityProduct}
+                    defaultValue={quantityProduct}
                     onChange={handleOnChangeQty}
-                    value={
-                      valueNumberInput
-                        ? valueNumberInput
-                        : Number(quantityProduct)
-                    }
-                    valueMax={Number(quantityProduct)}
-                    valueMin={1}
                   />
                 </Stack>
               </Grid>
@@ -526,7 +704,7 @@ const AddExportProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Price:
+                  Price: USD
                 </Typography>
                 <InputComponent
                   vInput={stateExportProduct.type}
@@ -582,11 +760,10 @@ const AddExportProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Vat:
+                  Vat: %
                 </Typography>
                 <InputComponent
                   vInput={stateExportProduct.vat}
-                  onChangeInput={handleOnChange}
                   nameInput="vat"
                   placeholder="Vat ..."
                   bgInput="#fff"
@@ -661,9 +838,9 @@ const AddExportProductComponent = (props) => {
                   Cost Import / Unit:
                 </Typography>
                 <InputComponent
-                  vInput={stateExportProduct.productFee}
-                  nameInput="productFee"
-                  placeholder="Product Fee  ..."
+                  vInput={stateExportProduct?.costImportUnit}
+                  nameInput="costImportUnit"
+                  placeholder="Cost/Unit..."
                   bgInput="#fff"
                   borderInput="1px solid #004225"
                 />
@@ -676,12 +853,12 @@ const AddExportProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Total Cost Import:
+                  Total Sale Price/Unit:
                 </Typography>
                 <InputComponent
-                  vInput={totalFee}
-                  nameInput="totalFee"
-                  placeholder="Total Fee ..."
+                  vInput={salePriceUnit}
+                  nameInput="salePriceUnit"
+                  placeholder="salePriceUnit ..."
                   bgInput="#fff"
                   borderInput="1px solid #004225"
                 />
@@ -694,7 +871,7 @@ const AddExportProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Total Export Fee:
+                  Total Ex Fee No Vat:
                 </Typography>
                 <InputComponent
                   vInput={totalExportFee}
@@ -712,12 +889,30 @@ const AddExportProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Total Export Fee (Vat):
+                  Total Ex Include Vat:
                 </Typography>
                 <InputComponent
                   vInput={exportFeeVat}
                   nameInput="exportFeeVat"
                   placeholder="Export Fee Vat..."
+                  bgInput="#fff"
+                  borderInput="1px solid #004225"
+                />
+              </Grid>
+              <Grid xs={3}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Profit No Vat:
+                </Typography>
+                <InputComponent
+                  vInput={profitNoVat}
+                  nameInput="profitNoVat"
+                  placeholder="profitNoVat..."
                   bgInput="#fff"
                   borderInput="1px solid #004225"
                 />
@@ -740,12 +935,14 @@ const AddExportProductComponent = (props) => {
                   borderInput="1px solid #004225"
                 />
               </Grid>
-              <Grid xs={2}>
+              <Grid xs={6}></Grid>
+              <Grid xs={3}>
                 <Stack
                   sx={{
                     flexDirection: "row",
                     height: "15vh",
                     width: "100%",
+                    marginTop: "10px",
                   }}
                 >
                   <Stack
@@ -804,7 +1001,7 @@ const AddExportProductComponent = (props) => {
                   </Stack>
                 </Stack>
               </Grid>
-              <Grid xs={10}>
+              <Grid xs={9}>
                 <Stack
                   sx={{
                     flexDirection: "row",
@@ -813,6 +1010,7 @@ const AddExportProductComponent = (props) => {
                     overflow: "hidden",
                     border: "1px solid #004225",
                     borderRadius: "5px",
+                    marginTop: "10px",
                   }}
                 >
                   <Stack

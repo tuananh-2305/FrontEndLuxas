@@ -9,9 +9,10 @@ export const addProduct = async (data) => {
   return res.data;
 };
 export const updateProduct = async (id, data) => {
+  const dataProduct = data.formData;
   const res = await axiosJWT.put(
     `${process.env.REACT_APP_API_URL}/product/update-product/${id}`,
-    data
+    dataProduct
   );
   return res.data;
 };
@@ -37,15 +38,20 @@ export const getDetailsProductByCode = async (params) => {
   return res.data;
 };
 
-export const getAllProduct = async (search) => {
+export const getAllProduct = async (data) => {
   let res = {};
-  if (search?.search?.length > 0) {
+  if (data?.search?.length > 0) {
     res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/product/get-all-product?filter=${search?.keySearch}&filter=${search?.search}`
+      `${process.env.REACT_APP_API_URL}/product/get-all-product?page=${data?.currentPage}&limit=${data?.limit}&filter=${data?.keySearch}&filter=${data?.search}`
+    );
+  } else if (data?.startDate && data?.endDate) {
+    console.log(data?.startDate, data?.endDate);
+    res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/product/get-all-product?page=${data?.currentPage}&limit=${data?.limit}&filter=${data?.keySearch}&filter=${data?.search}&startDate=${data?.startDate}&endDate=${data?.endDate}`
     );
   } else {
     res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/product/get-all-product`
+      `${process.env.REACT_APP_API_URL}/product/get-all-product?page=${data?.currentPage}&limit=${data?.limit}`
     );
   }
 

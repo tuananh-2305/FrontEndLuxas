@@ -10,23 +10,25 @@ import Select from "@mui/material/Select";
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as UserService from "../../service/UserService";
 import * as message from "../common/MessageComponent/MessageComponent";
+import { useSelector } from "react-redux";
 const UpdateUserComponent = (props) => {
   const initial = () => ({
     isAdmin: false,
-    image: "1",
+    image: "",
     idLuxas: "",
     name: "",
     email: "",
     phone: "",
     password: "",
+    newPassword: "",
   });
 
   const { open, idUser, setOpenDrawer, setIdUser, getAllUsers } = props;
   const [image, setImage] = useState("");
   const [inforUser, setInforUser] = useState(initial());
-  console.log(image);
+  const [isAdmin, setIsAdmin] = useState(false);
   const inputRef = useRef(null);
-
+  const user = useSelector((state) => state.user);
   const fetchGetDetailsUser = async (idUser) => {
     const res = await UserService.getDetailsUser(idUser);
     if (res?.data) {
@@ -39,6 +41,7 @@ const UpdateUserComponent = (props) => {
         phone: res?.data.phone,
         password: "",
       });
+      setIsAdmin(res?.data.isAdmin);
     }
   };
   useEffect(() => {
@@ -67,6 +70,10 @@ const UpdateUserComponent = (props) => {
 
   const handleAddImgUser = (e) => {
     setImage(e.target.files[0]);
+    setInforUser({
+      ...inforUser,
+      image: e.target.files[0],
+    });
   };
 
   const handleCloseDrawer = () => {
@@ -74,11 +81,11 @@ const UpdateUserComponent = (props) => {
     setIdUser("");
     setInforUser(initial());
   };
-
   const handleSelectPosition = (e) => {
+    setIsAdmin(e.target.value === "admin" ? true : false);
     setInforUser({
       ...inforUser,
-      isAdmin: e.target.value,
+      isAdmin: e.target.value === "admin" ? true : false,
     });
   };
 
@@ -88,9 +95,18 @@ const UpdateUserComponent = (props) => {
       [e.target.name]: e.target.value,
     });
   };
-
   const handleUpDateUser = () => {
-    mutationUpdate.mutate({ id: idUser, inforUser });
+    const formData = new FormData();
+
+    for (const key in inforUser) {
+      const value = inforUser[key];
+      formData.append(key, value);
+    }
+    mutationUpdate.mutate({
+      id: idUser,
+      formData,
+      token: user?.access_token,
+    });
   };
 
   return (
@@ -143,13 +159,17 @@ const UpdateUserComponent = (props) => {
                     "rgba(20, 20, 20, 0.5) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.4) 0rem 0.125rem 0.25rem -0.0625rem",
                 }}
               >
-                <Image
-                  src={
-                    inforUser?.image
-                      ? `${process.env.REACT_APP_UPLOAD_URL}/images/avatar/${inforUser?.image}`
-                      : ""
-                  }
-                />
+                {image ? (
+                  <Image src={URL.createObjectURL(image)} />
+                ) : (
+                  <Image
+                    src={
+                      inforUser?.image
+                        ? `${process.env.REACT_APP_UPLOAD_URL}/avatar/${inforUser?.image}`
+                        : ""
+                    }
+                  />
+                )}
               </Stack>
               <Stack
                 sx={{
@@ -216,7 +236,7 @@ const UpdateUserComponent = (props) => {
                     <Select
                       name="isAdmin"
                       onChange={handleSelectPosition}
-                      value={inforUser?.isAdmin === true ? "Admin" : "User"}
+                      value={isAdmin === true ? "admin" : "user"}
                       displayEmpty
                       sx={{
                         height: "50px",
@@ -225,8 +245,8 @@ const UpdateUserComponent = (props) => {
                         background: "#fff",
                       }}
                     >
-                      <MenuItem value="Admin">Admin</MenuItem>
-                      <MenuItem value="User">User</MenuItem>
+                      <MenuItem value="admin">Admin</MenuItem>
+                      <MenuItem value="user">User</MenuItem>
                     </Select>
                   </Stack>
                 </Grid>
@@ -326,6 +346,25 @@ const UpdateUserComponent = (props) => {
               onChangeInput={handleOnChangeDetails}
               nameInput="password"
               placeholder="Password ..."
+              bgInput="#fff"
+              borderInput="1px solid #1465C0"
+            />
+          </Grid>
+          <Grid xs={12}>
+            <Typography
+              sx={{
+                fontSize: "15px",
+                fontWeight: "bold",
+                marginBottom: "8px",
+              }}
+            >
+              New Password:
+            </Typography>
+            <InputComponent
+              vInput={inforUser?.newPassword}
+              onChangeInput={handleOnChangeDetails}
+              nameInput="newPassword"
+              placeholder="New Password ..."
               bgInput="#fff"
               borderInput="1px solid #1465C0"
             />

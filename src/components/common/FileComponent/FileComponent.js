@@ -6,10 +6,10 @@ import excelLogo from "../../../assets/images/excellogo.png";
 import wordImage from "../../../assets/images/word.png";
 import pdfLogo from "../../../assets/images/pdflogo.png";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import DownloadIcon from "@mui/icons-material/Download";
+import ClearIcon from "@mui/icons-material/Clear";
 
 const FileComponent = (props) => {
-  const { fileName, typeFile, fileCode } = props;
+  const { fileName, handleShowModal, idFile } = props;
 
   const newTab = (url) => {
     window.open(url);
@@ -20,7 +20,7 @@ const FileComponent = (props) => {
         borderRadius: "5px",
         background: "#fff",
         padding: "20px",
-        height: "35vh",
+        height: "30vh",
       }}
     >
       <Stack
@@ -56,23 +56,6 @@ const FileComponent = (props) => {
             <Image src={defaultFile} alt="" />
           )}
         </Stack>
-        {typeFile ? (
-          <Stack
-            sx={{
-              position: "absolute",
-              fontSize: "14px",
-              background: "#6C3428",
-              padding: "5px",
-              color: "#fff",
-              top: 0,
-              right: "0",
-            }}
-          >
-            {typeFile}
-          </Stack>
-        ) : (
-          ""
-        )}
       </Stack>
       <Stack
         sx={{
@@ -89,23 +72,18 @@ const FileComponent = (props) => {
               fileName.split(".")[1]
             : fileName}
         </Typography>
-        <Typography
-          sx={{ fontSize: "14px", color: "#1465C0", fontWeight: "bold" }}
-        >
-          {fileCode}
-        </Typography>
       </Stack>
       <Stack
         sx={{
           flexDirection: "row",
-          justifyContent: "center",
+          justifyContent: "space-between",
           marginTop: "auto",
         }}
       >
         <Stack
           sx={{
-            background: "#FF5630",
-            padding: "8px",
+            background: "#6C3428",
+            padding: "5px",
             borderRadius: "5px",
             color: "#FFF",
             cursor: "pointer",
@@ -119,29 +97,21 @@ const FileComponent = (props) => {
         >
           <VisibilityIcon fontSize="small" />
         </Stack>
-        {fileName.split(".")[1] === "xlsx" ||
-        fileName.split(".")[1] === "doc" ? (
-          <Stack
-            sx={{
-              background: "#6C3428",
-              padding: "8px",
-              borderRadius: "5px",
-              color: "#FFF",
-              marginLeft: "auto",
-              cursor: "pointer",
-              "&:hover": {
-                background: "#3C416F",
-              },
-            }}
-            onClick={() =>
-              newTab(`http://localhost:3001/uploads/files/${fileName}`)
-            }
-          >
-            <DownloadIcon fontSize="small" />
-          </Stack>
-        ) : (
-          ""
-        )}
+        <Stack
+          sx={{
+            background: "#EB375D",
+            padding: "5px",
+            borderRadius: "50%",
+            color: "#FFF",
+            cursor: "pointer",
+            "&:hover": {
+              background: "#3C416F",
+            },
+          }}
+          onClick={() => handleShowModal(idFile)}
+        >
+          <ClearIcon fontSize="small" />
+        </Stack>
       </Stack>
     </Stack>
   );

@@ -110,7 +110,7 @@ const Header = (props) => {
             alt="avatar"
             src={
               user?.image
-                ? `${process.env.REACT_APP_UPLOAD_URL}/images/avatar/${user?.image}`
+                ? `${process.env.REACT_APP_UPLOAD_URL}/avatar/${user?.image}`
                 : avatar
             }
             sx={{

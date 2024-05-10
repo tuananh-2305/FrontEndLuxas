@@ -68,7 +68,7 @@ const ShowExportDocument = (props) => {
             {document.map((file, index) => (
               <Grid xs={3} key={index}>
                 <Link
-                  to={`http://localhost:3001/uploads/files/${file.documentFileName}`}
+                  to={`http://localhost:3001/uploads/products/files/${file.documentFileName}`}
                 >
                   <Stack
                     sx={{

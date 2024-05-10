@@ -1,90 +1,131 @@
 import React from "react";
 import { Table } from "antd";
-const columns = [
-  {
-    title: "Full Name",
-    width: 100,
-    dataIndex: "name",
-    key: "name",
-    fixed: "left",
-  },
-  {
-    title: "Age",
-    width: 100,
-    dataIndex: "age",
-    key: "age",
-    fixed: "left",
-    sorter: true,
-  },
-  {
-    title: "Column 1",
-    dataIndex: "address",
-    key: "1",
-  },
-  {
-    title: "Column 2",
-    dataIndex: "address",
-    key: "2",
-  },
-  {
-    title: "Column 3",
-    dataIndex: "address",
-    key: "3",
-  },
-  {
-    title: "Column 4",
-    dataIndex: "address",
-    key: "4",
-  },
-  {
-    title: "Column 5",
-    dataIndex: "address",
-    key: "5",
-  },
-  {
-    title: "Column 6",
-    dataIndex: "address",
-    key: "6",
-  },
-  {
-    title: "Column 7",
-    dataIndex: "address",
-    key: "7",
-  },
-  {
-    title: "Column 8",
-    dataIndex: "address",
-    key: "8",
-  },
-  {
-    title: "Action",
-    key: "operation",
-    fixed: "right",
-    width: 100,
-    render: () => <>action</>,
-  },
-];
-const data = [
-  {
-    key: "1",
-    name: "John Brown",
-    age: 32,
-    address: "New York Park",
-  },
-  {
-    key: "2",
-    name: "Jim Green",
-    age: 40,
-    address: "London Park",
-  },
-];
-const TableComponent = () => (
-  <Table
-    columns={columns}
-    dataSource={data}
-    scroll={{
-      x: 1300,
-    }}
-  />
-);
+import LoadingComponent from "../LoadingComponent/LoadingComponent";
+import { downloadExcel } from "react-export-table-to-excel";
+import { useMemo } from "react";
+import ButtonComponent from "../ButtonComponent/ButtonComponent";
+
+const TableComponent = (props) => {
+  const {
+    isLoading = false,
+    columns,
+    data,
+    dataDefault,
+    typePage,
+    onChange,
+    totalPage,
+    pageSize,
+    currentPage,
+  } = props;
+  const newColumnExport = useMemo(() => {
+    const arr = columns?.filter(
+      (col) =>
+        col.dataIndex !== "" &&
+        col.dataIndex !== "stt" &&
+        col.dataIndex !== "image" &&
+        col.dataIndex !== "document" &&
+        col.dataIndex !== "implementer"
+    );
+    return arr;
+  }, [columns]);
+
+  const newColumns = newColumnExport?.map((data) => {
+    const newArray = [];
+    newArray.push(data.title);
+    return newArray;
+  });
+
+  const header = newColumns?.map((item) => {
+    return item.join();
+  });
+  const body2 = dataDefault?.map((item) => {
+    if (typePage === "limit") {
+      const {
+        image,
+        document,
+        __v,
+        _id,
+        createdAt,
+        updatedAt,
+        key,
+        implementer,
+        importDate,
+        importNo_VatNo,
+        ...rest
+      } = item;
+      return rest;
+    } else {
+      const {
+        image,
+        document,
+        __v,
+        _id,
+        createdAt,
+        updatedAt,
+        key,
+        implementer,
+        ...rest
+      } = item;
+      return rest;
+    }
+  });
+
+  const body = body2?.map((value) => {
+    var newValue = Object.values(value);
+    return newValue;
+  });
+
+  const handleDownloadExcel = () => {
+    downloadExcel({
+      fileName: "downloadExcelFromTable",
+      sheet: "react-export-table-to-excel",
+      tablePayload: {
+        header,
+        // accept two different data structures
+        body: body || body2,
+      },
+    });
+  };
+  return (
+    <LoadingComponent isLoading={isLoading}>
+      <div style={{ marginBottom: "10px" }}>
+        <ButtonComponent
+          textButton="Export Excel"
+          bgButton="#3C416F"
+          hoverBtn="#FE4C41"
+          wButton="120px"
+          paddingBtn="8px"
+          onClickBtn={() => handleDownloadExcel()}
+        />
+      </div>
+      <Table
+        onRow={(record) => {
+          return {
+            style: {
+              background:
+                typePage === "import" || typePage === "export"
+                  ? "none"
+                  : typePage === "limit" &&
+                    record.limitSetting === record.quantity
+                  ? "#00E204"
+                  : typePage === "limit" && record.quantity === 1
+                  ? "#ff5050"
+                  : "#F9D801",
+            },
+          };
+        }}
+        columns={columns}
+        dataSource={data}
+        onChange={onChange}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: totalPage || 0,
+        }}
+        scroll={{ x: "max-content" }}
+      />
+    </LoadingComponent>
+  );
+};
+
 export default TableComponent;

@@ -10,6 +10,7 @@ import Select from "@mui/material/Select";
 import { useMutationHooks } from "../../hook/useMutationHook";
 import * as ProductService from "../../service/ProductService";
 import * as message from "../common/MessageComponent/MessageComponent";
+import InputNumberComponent from "../common/InputNumberComponent/InputNumberComponent";
 const UpdateProductComponent = (props) => {
   const initial = () => ({
     image: "",
@@ -29,25 +30,29 @@ const UpdateProductComponent = (props) => {
     price: "",
     amount: "",
     size: "",
-    importTax: "",
+    importTax: 0,
     vatImport: "",
-    feeShipping: "",
-    costomsService: "",
-    fines: "",
-    totalFee: "",
-    description: "",
-    stockLocal: "",
+    feeShipping: 0,
+    costomsService: 0,
+    fines: 0,
+    costImportTax: 0,
+    costImportUnit: 0,
+    totalFeeVat: 0,
+    description: 0,
+    stockLocal: 0,
     note: "",
   });
   const { open, idProduct, setOpenDrawer, getAllProduct } = props;
   const [image, setImage] = useState("");
   const [productDetails, setProductDetails] = useState(initial());
-  console.log(image);
   const inputRef = useRef(null);
   const handleAddImgProduct = (e) => {
     setImage(e.target.files[0]);
+    setProductDetails({
+      ...productDetails,
+      image: e.target.files[0],
+    });
   };
-
   const fetchGetDetailsProduct = async (idProduct) => {
     const res = await ProductService.getDetailsProduct(idProduct);
     if (res?.data) {
@@ -74,19 +79,134 @@ const UpdateProductComponent = (props) => {
         feeShipping: res?.data.feeShipping,
         costomsService: res?.data.costomsService,
         fines: res?.data.fines,
-        productFee: res?.data.productFee,
-        totalFee: res?.data.totalFee,
+        costImportTax: res?.data.costImportTax,
+        costImportUnit: res?.data.costImportUnit,
+        totalFeeVat: res?.data.totalFeeVat,
         description: res?.data.description,
         stockLocal: res?.data.stockLocal,
         note: res?.data.note,
       });
+      setVatImport(res?.data.vatImport);
+      setImportTax(res?.data.importTax);
+      setCostImportTax(res?.data.costImportTax);
+      setAmount(res?.data.amount);
+      setTotalFeeVat(res?.data.totalFeeVat);
+      setCostImportUnit(res?.data.costImportUnit);
     }
+  };
+  const [vatImport, setVatImport] = useState(0);
+  const [importTax, setImportTax] = useState(0);
+  const [costImportTax, setCostImportTax] = useState(0);
+  const [amount, setAmount] = useState(0);
+  const [totalFeeVat, setTotalFeeVat] = useState(0);
+  const [costImportUnit, setCostImportUnit] = useState(0);
+  const handleSelectImportTax = (value) => {
+    setImportTax(value);
+    setProductDetails({
+      ...productDetails,
+      importTax: value,
+    });
+  };
+
+  const handleSelectVatImport = (e) => {
+    setVatImport(e.target.value);
+    setProductDetails({
+      ...productDetails,
+      vatImport: e.target.value,
+    });
+  };
+  const handleAmount = (qty, price) => {
+    const amount = Number(qty) * Number(price);
+    return amount;
+  };
+  const handleCostImportUnit = (costImport, qty) => {
+    const costImportUnit = Number(costImport) / Number(qty);
+    return costImportUnit;
+  };
+  const handleCostImport = (amount, feeShipping, costomsService, fines) => {
+    const costImport =
+      Number(amount) +
+      Number(feeShipping) +
+      Number(costomsService) +
+      Number(fines);
+    return costImport;
+  };
+
+  const handleCostImportTax = (constImport, importTax) => {
+    const costImportTax =
+      Number(constImport) + (Number(constImport) * Number(importTax)) / 100;
+    return costImportTax;
+  };
+  const handleTotalFeeVat = (costImportTax, vatImport) => {
+    const totalFeeVat =
+      Number(costImportTax) + (Number(costImportTax) * Number(vatImport)) / 100;
+    return totalFeeVat;
   };
   useEffect(() => {
     if (idProduct && open) {
       fetchGetDetailsProduct(idProduct);
     }
   }, [idProduct, open]);
+  useEffect(() => {
+    if (importTax === null) {
+      message.warning("Import Tax Must Be Number");
+    }
+    if (!productDetails.quantity || !productDetails.price) {
+      setAmount(0);
+      setTotalFeeVat(0);
+      setCostImportUnit(0);
+      setCostImportTax(0);
+      setTotalFeeVat(0);
+    }
+    if (productDetails.quantity && productDetails.price) {
+      const amount = handleAmount(
+        Number(productDetails.quantity),
+        Number(productDetails.price)
+      );
+      setAmount(amount);
+    }
+    if (productDetails.quantity !== 0 && costImportTax) {
+      const costImport = handleCostImportUnit(
+        costImportTax,
+        productDetails.quantity
+      );
+      setCostImportUnit(costImport.toFixed(2));
+    }
+    if (amount !== 0 && productDetails && importTax) {
+      const constImport = handleCostImport(
+        amount,
+        productDetails.feeShipping,
+        productDetails.costomsService,
+        productDetails.fines
+      );
+      const costImportTax = handleCostImportTax(constImport, importTax);
+
+      setCostImportTax(costImportTax.toFixed(2));
+    }
+    if (costImportTax && vatImport) {
+      const totalFeeVat = handleTotalFeeVat(costImportTax, vatImport);
+      setTotalFeeVat(Number(totalFeeVat).toFixed(2));
+    }
+    if (
+      amount !== 0 ||
+      totalFeeVat !== 0 ||
+      costImportUnit !== 0 ||
+      costImportTax !== 0
+    ) {
+      productDetails.amount = amount;
+      productDetails.totalFeeVat = totalFeeVat;
+      productDetails.costImportUnit = costImportUnit;
+      productDetails.costImportTax = costImportTax;
+    }
+  }, [
+    amount,
+    totalFeeVat,
+    costImportUnit,
+    productDetails,
+    vatImport,
+    importTax,
+    costImportTax,
+  ]);
 
   const mutationUpdate = useMutationHooks((data) => {
     const { id, ...rest } = data;
@@ -111,6 +231,25 @@ const UpdateProductComponent = (props) => {
     setProductDetails(initial());
   };
 
+  // const handleShippingFee = (value) => {
+  //   setProductDetails({
+  //     ...productDetails,
+  //     feeShipping: value,
+  //   });
+  // };
+  // const handleCostomsService = (value) => {
+  //   setProductDetails({
+  //     ...productDetails,
+  //     costomsService: value,
+  //   });
+  // };
+  // const handleFines = (value) => {
+  //   setProductDetails({
+  //     ...productDetails,
+  //     fines: value,
+  //   });
+  // };
+
   const handleDescription = (e) => {
     setProductDetails({
       ...productDetails,
@@ -131,8 +270,17 @@ const UpdateProductComponent = (props) => {
     });
   };
 
-  const handleUpDateProduct = (idProduct) => {
-    mutationUpdate.mutate({ id: idProduct, productDetails });
+  const handleUpDateProduct = () => {
+    const formData = new FormData();
+
+    for (const key in productDetails) {
+      const value = productDetails[key];
+      formData.append(key, value);
+    }
+    mutationUpdate.mutate({
+      id: idProduct,
+      formData,
+    });
   };
 
   return (
@@ -189,13 +337,17 @@ const UpdateProductComponent = (props) => {
                       "rgba(20, 20, 20, 0.12) 0rem 0.25rem 0.375rem -0.0625rem, rgba(20, 20, 20, 0.07) 0rem 0.125rem 0.25rem -0.0625rem",
                   }}
                 >
-                  <Image
-                    src={
-                      productDetails?.image
-                        ? `${process.env.REACT_APP_UPLOAD_URL}/images/products/${productDetails?.image}`
-                        : ""
-                    }
-                  />
+                  {image ? (
+                    <Image src={URL.createObjectURL(image)} />
+                  ) : (
+                    <Image
+                      src={
+                        productDetails?.image
+                          ? `${process.env.REACT_APP_UPLOAD_URL}/products/images/${productDetails?.image}`
+                          : ""
+                      }
+                    />
+                  )}
                 </Stack>
                 <Stack
                   sx={{
@@ -418,7 +570,7 @@ const UpdateProductComponent = (props) => {
                   borderInput="1px solid #3F0072"
                 />
               </Grid>
-              <Grid xs={4}>
+              <Grid xs={6}>
                 <Typography
                   sx={{
                     fontSize: "15px",
@@ -437,7 +589,7 @@ const UpdateProductComponent = (props) => {
                   borderInput="1px solid #3F0072"
                 />
               </Grid>
-              <Grid xs={2}>
+              <Grid xs={3}>
                 <Typography
                   sx={{
                     fontSize: "15px",
@@ -521,7 +673,7 @@ const UpdateProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Price:
+                  Price: USD
                 </Typography>
                 <InputComponent
                   onChangeInput={handleOnChangeDetails}
@@ -540,7 +692,7 @@ const UpdateProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Amount:
+                  Amount: USD
                 </Typography>
                 <InputComponent
                   onChangeInput={handleOnChangeDetails}
@@ -559,7 +711,7 @@ const UpdateProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Size:
+                  Size: Cm
                 </Typography>
                 <InputComponent
                   onChangeInput={handleOnChangeDetails}
@@ -578,16 +730,19 @@ const UpdateProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Import Tax:
+                  Import Tax: {importTax}
                 </Typography>
-                <InputComponent
-                  onChangeInput={handleOnChangeDetails}
-                  vInput={productDetails?.importTax}
-                  nameInput="importTax"
-                  placeholder="Import Tax ..."
-                  bgInput="#fff"
-                  borderInput="1px solid #3F0072"
-                />
+                <Stack sx={{ width: "100%" }}>
+                  <InputNumberComponent
+                    defaultValue={importTax}
+                    border="1px solid #3F0072"
+                    height="50px"
+                    width="100%"
+                    min={1}
+                    max={30}
+                    onChange={handleSelectImportTax}
+                  />
+                </Stack>
               </Grid>
               <Grid xs={3}>
                 <Typography
@@ -597,16 +752,24 @@ const UpdateProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Vat Import:
+                  Vat Import: %
                 </Typography>
-                <InputComponent
-                  onChangeInput={handleOnChangeDetails}
-                  vInput={productDetails?.vatImport}
-                  nameInput="vatImport"
-                  placeholder="%"
-                  bgInput="#fff"
-                  borderInput="1px solid #3F0072"
-                />
+                <Stack sx={{ width: "100%" }}>
+                  <Select
+                    onChange={handleSelectVatImport}
+                    value={vatImport}
+                    displayEmpty
+                    sx={{
+                      height: "50px",
+                      border: "1px solid #3F0072",
+                      textAlign: "center",
+                      background: "#fff",
+                    }}
+                  >
+                    <MenuItem value="10">10 %</MenuItem>
+                    <MenuItem value="8">8 %</MenuItem>
+                  </Select>
+                </Stack>
               </Grid>
               <Grid xs={3}>
                 <Typography
@@ -656,16 +819,18 @@ const UpdateProductComponent = (props) => {
                 >
                   Fines (If any):
                 </Typography>
-                <InputComponent
-                  onChangeInput={handleOnChangeDetails}
-                  vInput={productDetails?.fines}
-                  nameInput="fines"
-                  placeholder="Fines ..."
-                  bgInput="#fff"
-                  borderInput="1px solid #3F0072"
-                />
+                <Stack sx={{ width: "100%" }}>
+                  <InputComponent
+                    onChangeInput={handleOnChangeDetails}
+                    vInput={productDetails?.fines}
+                    nameInput="fines"
+                    placeholder="Finez..."
+                    bgInput="#fff"
+                    borderInput="1px solid #3F0072"
+                  />
+                </Stack>
               </Grid>
-              <Grid xs={3}>
+              <Grid xs={4}>
                 <Typography
                   sx={{
                     fontSize: "15px",
@@ -673,18 +838,18 @@ const UpdateProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Product Fee:
+                  Cost Import/Unit:
                 </Typography>
                 <InputComponent
                   onChangeInput={handleOnChangeDetails}
-                  vInput={productDetails?.productFee}
-                  nameInput="productFee"
-                  placeholder="Total Fee  ..."
+                  vInput={costImportUnit}
+                  nameInput="costImportUnit"
+                  placeholder="Cost /Unit ..."
                   bgInput="#fff"
                   borderInput="1px solid #3F0072"
                 />
               </Grid>
-              <Grid xs={3}>
+              <Grid xs={4}>
                 <Typography
                   sx={{
                     fontSize: "15px",
@@ -692,13 +857,32 @@ const UpdateProductComponent = (props) => {
                     marginBottom: "8px",
                   }}
                 >
-                  Total Fee:
+                  Cost Import No Vat:
                 </Typography>
                 <InputComponent
                   onChangeInput={handleOnChangeDetails}
-                  vInput={productDetails?.totalFee}
-                  nameInput="totalFee"
-                  placeholder="Total Fee  ..."
+                  vInput={productDetails?.costImportTax}
+                  nameInput="costImportTax"
+                  placeholder="Cost Import Tax..."
+                  bgInput="#fff"
+                  borderInput="1px solid #3F0072"
+                />
+              </Grid>
+              <Grid xs={4}>
+                <Typography
+                  sx={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Total Fee Include Vat:
+                </Typography>
+                <InputComponent
+                  onChangeInput={handleOnChangeDetails}
+                  vInput={totalFeeVat}
+                  nameInput="totalFeeVat"
+                  placeholder="Total Fee Vat ..."
                   bgInput="#fff"
                   borderInput="1px solid #3F0072"
                 />

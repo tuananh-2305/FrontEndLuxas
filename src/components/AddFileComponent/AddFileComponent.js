@@ -25,12 +25,13 @@ const AddFileComponent = (props) => {
     jpg: imageFile,
     png: imageFile,
   };
-  const { openModal, closeModal, fileList, setFileList } = props;
+  const { openModal, closeModal, fileList, setFileList, getAllFile } = props;
   const [isHovering, setIsHovering] = useState(false);
   const inputFileRef = useRef(null);
 
   const handleUploadFile = (e) => {
     const newFile = e.target.files[0];
+
     if (newFile) {
       const updateList = [...fileList, newFile];
       setFileList(updateList);
@@ -51,8 +52,9 @@ const AddFileComponent = (props) => {
 
   useEffect(() => {
     if (data?.status === "OK") {
-      message.success("Add File Success");
       closeModal();
+      message.success("Add File Success");
+      getAllFile();
     } else if (data?.status === "ERROR") {
       message.error(data?.message);
     }
@@ -187,7 +189,7 @@ const AddFileComponent = (props) => {
                     <Stack>
                       <Image
                         src={
-                          imageConfig[file.type.split("/")[1]] ||
+                          imageConfig[file?.type?.split("/")[1]] ||
                           imageConfig["default"]
                         }
                         style={{ width: "50px", height: "50px" }}

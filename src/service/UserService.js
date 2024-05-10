@@ -26,10 +26,12 @@ export const getDetailsUser = async (id, access_token) => {
   return res.data;
 };
 
-export const updateUser = async (id, data, access_token) => {
+export const updateUser = async (id, data) => {
+  const dataUser = data.formData;
+  const access_token = data.token;
   const res = await axiosJWT.put(
     `${process.env.REACT_APP_API_URL}/user/update-user/${id}`,
-    data,
+    dataUser,
     {
       headers: {
         token: `Bearer ${access_token}`,
